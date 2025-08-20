@@ -52,43 +52,18 @@
       <form id="contractForm">
         <div class="form-grid">
           <div class="form-field">
-            <label for="clientName">Nome do Cliente *</label>
+            <label for="clientName">Nome Completo *</label>
             <input type="text" id="clientName" name="clientName" required />
           </div>
           
           <div class="form-field">
-            <label for="clientEmail">E-mail *</label>
-            <input type="email" id="clientEmail" name="clientEmail" required />
-          </div>
-          
-          <div class="form-field">
-            <label for="clientDoc">CPF/CNPJ *</label>
+            <label for="clientDoc">CPF ou CNPJ *</label>
             <input type="text" id="clientDoc" name="clientDoc" required />
           </div>
           
           <div class="form-field">
-            <label for="clientAddress">Endereço *</label>
-            <input type="text" id="clientAddress" name="clientAddress" required />
-          </div>
-          
-          <div class="form-field">
-            <label for="contractValue">Valor do Contrato *</label>
-            <input type="text" id="contractValue" name="contractValue" placeholder="R$ 0,00" required />
-          </div>
-          
-          <div class="form-field">
-            <label for="paymentTerms">Condições de Pagamento</label>
-            <input type="text" id="paymentTerms" name="paymentTerms" placeholder="Ex: 30% na assinatura e 70% na entrega" />
-          </div>
-          
-          <div class="form-field">
-            <label for="dueDate">Data de Vencimento</label>
-            <input type="date" id="dueDate" name="dueDate" />
-          </div>
-          
-          <div class="form-field">
-            <label for="contractNotes">Observações</label>
-            <textarea id="contractNotes" name="contractNotes" rows="3"></textarea>
+            <label for="paymentDate">Data de Pagamento *</label>
+            <input type="date" id="paymentDate" name="paymentDate" required />
           </div>
         </div>
         

@@ -58,6 +58,10 @@ class ContractManager {
       // Novo contrato
       title.textContent = 'Novo Contrato';
       form.reset();
+      
+      // Definir data de pagamento como hoje
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('paymentDate').value = today;
     }
     
     modal.classList.add('active');
@@ -84,13 +88,8 @@ class ContractManager {
 
   fillForm(contract) {
     document.getElementById('clientName').value = contract.clientName;
-    document.getElementById('clientEmail').value = contract.clientEmail;
     document.getElementById('clientDoc').value = contract.clientDoc;
-    document.getElementById('clientAddress').value = contract.clientAddress;
-    document.getElementById('contractValue').value = contract.contractValue;
-    document.getElementById('paymentTerms').value = contract.paymentTerms || '';
-    document.getElementById('dueDate').value = contract.dueDate || '';
-    document.getElementById('contractNotes').value = contract.contractNotes || '';
+    document.getElementById('paymentDate').value = contract.paymentDate || '';
   }
 
   handleSubmit(e) {
@@ -100,13 +99,8 @@ class ContractManager {
     const contractData = {
       id: this.currentContractId || this.generateId(),
       clientName: formData.get('clientName'),
-      clientEmail: formData.get('clientEmail'),
       clientDoc: formData.get('clientDoc'),
-      clientAddress: formData.get('clientAddress'),
-      contractValue: formData.get('contractValue'),
-      paymentTerms: formData.get('paymentTerms'),
-      dueDate: formData.get('dueDate'),
-      contractNotes: formData.get('contractNotes'),
+      paymentDate: formData.get('paymentDate'),
       status: 'pending',
       createdAt: new Date().toISOString(),
       signedAt: null
@@ -162,7 +156,7 @@ class ContractManager {
     div.innerHTML = `
       <div class="contract-info">
         <h3>${contract.clientName}</h3>
-        <p>${contract.clientEmail} • ${contract.contractValue}</p>
+        <p>${contract.clientDoc} • ${contract.paymentDate ? new Date(contract.paymentDate).toLocaleDateString('pt-BR') : 'Data não informada'}</p>
       </div>
       <div class="contract-status">
         <span class="status-badge ${statusClass}">${statusText}</span>
@@ -184,32 +178,16 @@ class ContractManager {
     
     container.innerHTML = `
       <div class="detail-row">
-        <span class="detail-label">Cliente:</span>
+        <span class="detail-label">Nome Completo:</span>
         <span class="detail-value">${contract.clientName}</span>
       </div>
       <div class="detail-row">
-        <span class="detail-label">E-mail:</span>
-        <span class="detail-value">${contract.clientEmail}</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">CPF/CNPJ:</span>
+        <span class="detail-label">CPF ou CNPJ:</span>
         <span class="detail-value">${contract.clientDoc}</span>
       </div>
       <div class="detail-row">
-        <span class="detail-label">Endereço:</span>
-        <span class="detail-value">${contract.clientAddress}</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Valor:</span>
-        <span class="detail-value">${contract.contractValue}</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Condições de Pagamento:</span>
-        <span class="detail-value">${contract.paymentTerms || 'Não informado'}</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Data de Vencimento:</span>
-        <span class="detail-value">${contract.dueDate ? new Date(contract.dueDate).toLocaleDateString('pt-BR') : 'Não informado'}</span>
+        <span class="detail-label">Data de Pagamento:</span>
+        <span class="detail-value">${contract.paymentDate ? new Date(contract.paymentDate).toLocaleDateString('pt-BR') : 'Não informado'}</span>
       </div>
       <div class="detail-row">
         <span class="detail-label">Status:</span>
@@ -225,12 +203,6 @@ class ContractManager {
         <div class="detail-row">
           <span class="detail-label">Assinado em:</span>
           <span class="detail-value">${new Date(contract.signedAt).toLocaleDateString('pt-BR')} às ${new Date(contract.signedAt).toLocaleTimeString('pt-BR')}</span>
-        </div>
-      ` : ''}
-      ${contract.contractNotes ? `
-        <div class="detail-row">
-          <span class="detail-label">Observações:</span>
-          <span class="detail-value">${contract.contractNotes}</span>
         </div>
       ` : ''}
     `;
@@ -293,7 +265,9 @@ Atenciosamente,
 Kings Agência
     `);
     
-    window.open(`mailto:${contract.clientEmail}?subject=${subject}&body=${body}`);
+    // Como não temos mais email, abrir em uma nova aba para copiar o link
+    window.open(link, '_blank');
+    this.showNotification('📄 Contrato aberto em nova aba. Copie o link para enviar ao cliente.', 'info');
   }
 
   deleteContract() {

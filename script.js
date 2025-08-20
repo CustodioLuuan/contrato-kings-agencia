@@ -1,4 +1,13 @@
 (function() {
+  // Sempre voltar ao topo ao carregar/atualizar a página
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  function forceScrollTop() {
+    try { window.scrollTo(0, 0); } catch (_) {}
+  }
+  window.addEventListener('load', forceScrollTop);
+  window.addEventListener('pageshow', function(e) { if (e.persisted) forceScrollTop(); });
   const form = document.getElementById('contractForm');
   const nomeInput = document.getElementById('nome');
   const docInput = document.getElementById('doc');

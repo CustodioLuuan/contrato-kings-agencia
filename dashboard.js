@@ -344,25 +344,43 @@ Kings Agência
 
   // Método para baixar PDF do contrato
   downloadContractPdf() {
+    console.log('Iniciando download do PDF...');
+    
     const contract = this.contracts.find(c => c.id === this.currentContractId);
-    if (!contract) return;
+    if (!contract) {
+      console.error('Contrato não encontrado');
+      this.showNotification('❌ Contrato não encontrado', 'danger');
+      return;
+    }
+
+    console.log('Contrato encontrado:', contract);
 
     // Verificar se o contrato foi assinado
     if (contract.status !== 'signed') {
+      console.log('Contrato não foi assinado ainda');
       this.showNotification('❌ Este contrato ainda não foi assinado!', 'warning');
       return;
     }
 
+    // Verificar se jsPDF está disponível
+    if (!window.jspdf) {
+      console.error('jsPDF não está disponível globalmente');
+      this.showNotification('❌ Erro: jsPDF não está carregado', 'danger');
+      return;
+    }
+
     try {
+      console.log('Gerando HTML do contrato...');
       // Criar conteúdo HTML do contrato para PDF
       const contractHtml = this.generateContractHtml(contract);
       
+      console.log('HTML gerado, iniciando geração do PDF...');
       // Gerar e baixar PDF
       this.generateAndDownloadPdf(contractHtml, contract);
       
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
-      this.showNotification('❌ Erro ao gerar PDF do contrato', 'danger');
+      this.showNotification('❌ Erro ao gerar PDF do contrato: ' + error.message, 'danger');
     }
   }
 
@@ -455,32 +473,65 @@ Kings Agência
 
   // Gerar e baixar PDF
   generateAndDownloadPdf(htmlContent, contract) {
-    // Criar um elemento temporário para renderizar o HTML
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlContent;
-    document.body.appendChild(tempDiv);
+    try {
+      // Verificar se jsPDF está disponível
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        console.error('jsPDF não está disponível');
+        this.showNotification('❌ Erro: jsPDF não está carregado', 'danger');
+        return;
+      }
 
-    // Usar jsPDF para gerar o PDF
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    
-    // Converter HTML para PDF
-    pdf.html(tempDiv, {
-      callback: function(pdf) {
-        // Baixar o PDF
-        const fileName = `contrato_${contract.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
-        pdf.save(fileName);
-        
-        // Remover elemento temporário
-        document.body.removeChild(tempDiv);
-        
-        // Mostrar notificação de sucesso
-        this.showNotification('✅ PDF baixado com sucesso!', 'success');
-      }.bind(this),
-      x: 15,
-      y: 15,
-      width: 180
-    });
+      // Criar um elemento temporário para renderizar o HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '-9999px';
+      document.body.appendChild(tempDiv);
+
+      // Usar jsPDF para gerar o PDF
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      console.log('Iniciando geração do PDF...');
+      
+      // Converter HTML para PDF
+      pdf.html(tempDiv, {
+        callback: function(pdf) {
+          try {
+            console.log('PDF gerado com sucesso, iniciando download...');
+            
+            // Baixar o PDF
+            const fileName = `contrato_${contract.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+            pdf.save(fileName);
+            
+            // Remover elemento temporário
+            if (document.body.contains(tempDiv)) {
+              document.body.removeChild(tempDiv);
+            }
+            
+            // Mostrar notificação de sucesso
+            this.showNotification('✅ PDF baixado com sucesso!', 'success');
+            console.log('PDF baixado com sucesso:', fileName);
+          } catch (error) {
+            console.error('Erro ao baixar PDF:', error);
+            this.showNotification('❌ Erro ao baixar PDF', 'danger');
+          }
+        }.bind(this),
+        x: 15,
+        y: 15,
+        width: 180,
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true
+        }
+      });
+      
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      this.showNotification('❌ Erro ao gerar PDF: ' + error.message, 'danger');
+    }
   }
 }
 

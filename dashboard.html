@@ -99,6 +99,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="config.js"></script>
   <script src="dashboard.js"></script>
+  <script>
+    // Verificar se jsPDF foi carregado corretamente
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.jspdf) {
+        console.log('✅ jsPDF carregado com sucesso');
+      } else {
+        console.error('❌ jsPDF não foi carregado');
+      }
+    });
+  </script>
 </body>
 </html>
 

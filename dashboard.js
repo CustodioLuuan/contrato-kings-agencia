@@ -24,6 +24,7 @@ class ContractManager {
     // Ações do contrato
     document.getElementById('copyLinkBtn').addEventListener('click', () => this.copyContractLink());
     document.getElementById('sendEmailBtn').addEventListener('click', () => this.sendContractEmail());
+    document.getElementById('downloadPdfBtn').addEventListener('click', () => this.downloadContractPdf());
     document.getElementById('deleteContractBtn').addEventListener('click', () => this.deleteContract());
     
     // Fechar modais clicando fora
@@ -223,7 +224,7 @@ class ContractManager {
       ${contract.signedAt ? `
         <div class="detail-row">
           <span class="detail-label">Assinado em:</span>
-          <span class="detail-value">${new Date(contract.signedAt).toLocaleDateString('pt-BR')}</span>
+          <span class="detail-value">${new Date(contract.signedAt).toLocaleDateString('pt-BR')} às ${new Date(contract.signedAt).toLocaleTimeString('pt-BR')}</span>
         </div>
       ` : ''}
       ${contract.contractNotes ? `
@@ -233,6 +234,17 @@ class ContractManager {
         </div>
       ` : ''}
     `;
+
+    // Mostrar/ocultar botão de download baseado no status
+    const downloadBtn = document.getElementById('downloadPdfBtn');
+    if (downloadBtn) {
+      if (contract.status === 'signed') {
+        downloadBtn.style.display = 'inline-block';
+        downloadBtn.disabled = false;
+      } else {
+        downloadBtn.style.display = 'none';
+      }
+    }
   }
 
   copyContractLink() {
@@ -353,6 +365,41 @@ Kings Agência
       this.saveContracts();
       this.renderContracts();
       this.updateStats();
+    }
+  }
+
+  // Método para baixar PDF do contrato
+  downloadContractPdf() {
+    const contract = this.contracts.find(c => c.id === this.currentContractId);
+    if (!contract) return;
+
+    // Verificar se o contrato foi assinado
+    if (contract.status !== 'signed') {
+      this.showNotification('❌ Este contrato ainda não foi assinado!', 'warning');
+      return;
+    }
+
+    try {
+      // Criar um link temporário para abrir a página de contrato
+      const baseUrl = getBaseUrl();
+      const contractUrl = `${baseUrl}/index.html?contract=${contract.id}`;
+      
+      // Abrir em nova aba para gerar o PDF
+      const newWindow = window.open(contractUrl, '_blank');
+      
+      if (newWindow) {
+        this.showNotification('📄 Abrindo contrato para download do PDF...', 'info');
+        
+        // Aguardar um pouco e mostrar instruções
+        setTimeout(() => {
+          this.showNotification('💡 Na nova aba, clique em "Enviar e Baixar PDF" para baixar o arquivo', 'info');
+        }, 2000);
+      } else {
+        this.showNotification('❌ Erro ao abrir contrato. Verifique se o popup está bloqueado.', 'danger');
+      }
+    } catch (error) {
+      console.error('Erro ao abrir contrato:', error);
+      this.showNotification('❌ Erro ao abrir contrato para download', 'danger');
     }
   }
 }

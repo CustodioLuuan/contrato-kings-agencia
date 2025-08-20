@@ -104,6 +104,7 @@
   });
 
   initSignaturePad();
+  // Removido indicador sutil de rolagem
 
   // Oculta o botão de tela cheia em dispositivos não-touch (desktop)
   if (fsOpenBtn && !isTouchDevice()) {

@@ -62,7 +62,16 @@ body {
   overflow: auto;
   line-height: 1.6;
   white-space: pre-wrap;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #b8bdc7 transparent;
 }
+
+.contract-box::-webkit-scrollbar { width: 8px; }
+.contract-box::-webkit-scrollbar-track { background: transparent; }
+.contract-box::-webkit-scrollbar-thumb { background: #c1c7d0; border-radius: 8px; }
+.contract-box::-webkit-scrollbar-thumb:hover { background: #aeb4bf; }
 
 .form {
   margin-top: 8px;
@@ -309,11 +318,15 @@ body.sigfs-lock { overflow: hidden; }
   .signature-actions .btn { width: 100%; }
   .doc-type { flex-wrap: wrap; gap: 10px; }
   .radio { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); }
+
+  /* Removido indicador sutil de rolagem */
 }
 
 @media (max-width: 360px) {
   .title { font-size: 1.1rem; }
   .signature-pad { height: 160px; }
 }
+
+/* Removida animação de indicador */
 
 

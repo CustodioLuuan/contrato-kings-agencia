@@ -54,18 +54,13 @@ body {
 }
 
 .contract-box {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fcfcfd;
-  padding: 16px;
-  height: 320px;
-  overflow: auto;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  position: relative;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: #b8bdc7 transparent;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+  overflow: hidden;
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 .contract-box::-webkit-scrollbar { width: 8px; }
@@ -343,81 +338,75 @@ body.sigfs-lock { overflow: hidden; }
 
 /* Estilos para o contrato organizado */
 .contract-content {
-  font-size: 14px;
-  line-height: 1.6;
+  padding: 20px;
+  font-size: 13px;
+  line-height: 1.4;
   color: #333;
   font-family: 'Roboto', sans-serif;
 }
 
 .contract-header {
   text-align: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #333;
 }
 
 .contract-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f2937;
+  font-size: 18px;
+  font-weight: bold;
   margin: 0;
+  color: #1f2937;
 }
 
 .contract-section {
-  margin-bottom: 25px;
-  padding: 20px;
-  background: #f9fafb;
-  border-radius: 8px;
-  border-left: 4px solid #3b82f6;
+  margin: 15px 0;
 }
 
 .contract-section h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 15px 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.contract-section h4 {
   font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  margin: 20px 0 10px 0;
+  font-weight: bold;
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  text-transform: uppercase;
 }
 
 .contract-section p {
-  margin: 0 0 12px 0;
+  margin: 6px 0;
   text-align: justify;
 }
 
 .contract-section ul {
-  margin: 10px 0;
+  margin: 6px 0;
   padding-left: 20px;
 }
 
 .contract-section li {
-  margin-bottom: 8px;
-  line-height: 1.5;
+  margin: 3px 0;
 }
 
 .contract-signature {
-  margin: 30px 0;
-  padding: 25px;
-  background: #f3f4f6;
-  border-radius: 8px;
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.signature-box {
+  flex: 1;
   text-align: center;
-  border: 1px solid #d1d5db;
 }
 
-.contract-signature p {
-  margin: 8px 0;
+.signature-line {
+  border-top: 2px solid #333;
+  margin-bottom: 8px;
+  padding-top: 8px;
+}
+
+.signature-box p {
+  margin: 3px 0;
   font-weight: 500;
-}
-
-.contract-signature strong {
-  color: #1f2937;
+  font-size: 12px;
 }
 
 /* Ajustes responsivos para o contrato organizado */
@@ -453,5 +442,35 @@ body.sigfs-lock { overflow: hidden; }
   .contract-signature {
     padding: 20px 15px;
   }
+}
+
+.form-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
 }
 

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contrato de Prestação de Serviços – Kings Agência</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Signature Pad -->
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <main class="page">
+    <section class="container">
+      <h1 class="title">📄 Contrato de Prestação de Serviços – Kings Agência</h1>
+
+      <div class="contract-wrapper">
+        <div class="contract-box" id="contractBox">
+          <div class="contract-content">
+📄 CONTRATO DE PRESTAÇÃO DE SERVIÇOS – KINGS AGÊNCIA
+
+PARTES:
+De um lado, KINGS AGÊNCIA, inscrito no CPF nº 145.998.009-37, prestando serviços de forma online, doravante denominado CONTRATADO;
+E de outro, [Nome do Cliente], inscrito no CPF nº [●], doravante denominado CONTRATANTE.
+
+CLÁUSULA 1 – OBJETO
+
+1.1 O presente contrato tem por objeto a prestação de serviços pelo CONTRATADO ao CONTRATANTE, podendo incluir:
+
+Criação, desenvolvimento e manutenção de sites;
+
+Hospedagem e suporte técnico;
+
+Marketing digital, design e outras soluções acordadas.
+
+1.2 O site será desenvolvido de acordo com o gosto, preferências e informações fornecidas pelo CONTRATANTE no início do projeto, garantindo que o valor contratado cobre a entrega conforme esse combinado.
+
+1.3 Após a finalização e aprovação do site pelo CONTRATANTE, caso este venha a solicitar alterações, modificações ou ajustes adicionais não previstos no escopo inicial, será cobrado o valor correspondente a 30% (trinta por cento) sobre o valor da alteração solicitada, independentemente do valor global do contrato.
+
+CLÁUSULA 2 – PRAZO
+
+2.1 O prazo para entrega dos serviços será definido em cronograma acordado entre as partes.
+
+CLÁUSULA 3 – VALOR E PAGAMENTO
+
+3.1 O CONTRATANTE pagará ao CONTRATADO o valor de R$ [●], conforme condições: [ex.: 30% na assinatura e 70% na entrega].
+3.2 Em caso de mensalidade (hospedagem/manutenção), o pagamento ocorrerá todo dia [●] de cada mês.
+3.3 O valor do contrato não será reajustado continuamente; somente poderá haver cobrança adicional em caso de alterações solicitadas pelo CONTRATANTE, conforme Cláusula 1.3.
+
+CLÁUSULA 4 – OBRIGAÇÕES DO CONTRATADO
+
+Entregar os serviços contratados dentro do prazo estabelecido;
+
+Garantir a confidencialidade das informações do CONTRATANTE;
+
+Prestar suporte técnico conforme acordado.
+
+CLÁUSULA 5 – OBRIGAÇÕES DO CONTRATANTE
+
+Fornecer informações, conteúdos e materiais necessários para execução dos serviços;
+
+Efetuar os pagamentos nas datas ajustadas;
+
+Respeitar os prazos de aprovação e feedback.
+
+CLÁUSULA 6 – RESCISÃO
+
+6.1 O presente contrato poderá ser rescindido por qualquer das partes mediante aviso prévio de 30 dias.
+6.2 Em caso de inadimplência, o CONTRATADO poderá suspender os serviços.
+
+CLÁUSULA 7 – FORO
+
+Fica eleito o foro da comarca de [Cidade/UF], com renúncia a qualquer outro, para dirimir quaisquer dúvidas decorrentes deste contrato.
+
+[Local], [Data].
+
+Kings Agência – CONTRATADO
+
+[Cliente] – CONTRATANTE
+          </div>
+        </div>
+      </div>
+
+      <form class="form" id="contractForm" novalidate>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="nome">Nome completo</label>
+            <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required />
+            <small class="error" data-for="nome"></small>
+          </div>
+          <div class="form-field">
+            <label>Documento</label>
+            <div class="doc-type">
+              <label class="radio"><input type="radio" name="docType" value="CPF" checked /> CPF</label>
+              <label class="radio"><input type="radio" name="docType" value="CNPJ" /> CNPJ</label>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="doc" id="docLabel">CPF</label>
+            <input type="text" id="doc" name="doc" placeholder="000.000.000-00" required />
+            <small class="error" data-for="doc"></small>
+          </div>
+          <div class="form-field">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="seuemail@exemplo.com" required />
+            <small class="error" data-for="email"></small>
+          </div>
+          <div class="form-field full">
+            <label for="endereco">Endereço</label>
+            <input type="text" id="endereco" name="endereco" placeholder="Rua, número, bairro, cidade - UF" required />
+            <small class="error" data-for="endereco"></small>
+          </div>
+        </div>
+
+        <div class="signature-section">
+          <label>Assinatura digital</label>
+          <div class="signature-pad">
+            <canvas id="signatureCanvas"></canvas>
+          </div>
+          <div class="signature-actions">
+            <button type="button" class="btn btn-ghost" id="clearSignature">Limpar assinatura</button>
+          </div>
+          <small class="error" data-for="signature"></small>
+        </div>
+
+        <div class="check">
+          <input type="checkbox" id="aceite" required />
+          <label for="aceite">Li e aceito os termos do contrato</label>
+        </div>
+        <small class="error" data-for="aceite"></small>
+
+        <div class="actions">
+          <button type="submit" class="btn" id="submitBtn">Enviar e Baixar PDF</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+

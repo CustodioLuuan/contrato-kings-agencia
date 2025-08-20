@@ -1,0 +1,205 @@
+:root {
+  --bg: #f8f9fa;
+  --fg: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --primary: #4CAF50;
+  --primary-dark: #439a46;
+  --danger: #ef4444;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.container {
+  background: var(--white);
+  width: 100%;
+  max-width: 980px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  padding: 24px;
+}
+
+.title {
+  margin: 0 0 16px 0;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.contract-wrapper {
+  margin: 8px 0 20px 0;
+}
+
+.contract-box {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fcfcfd;
+  padding: 16px;
+  height: 320px;
+  overflow: auto;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.form {
+  margin-top: 8px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field.full {
+  grid-column: 1 / -1;
+}
+
+label {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="email"],
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  outline: none;
+  background: var(--white);
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #b5bbc4;
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.12);
+}
+
+.signature-section {
+  margin-top: 8px;
+}
+
+.signature-pad {
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+  width: 100%;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.signature-pad canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.signature-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.doc-type {
+  display: inline-flex;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .95rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  background: var(--primary);
+  color: var(--white);
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s ease, transform .02s ease;
+}
+
+.btn:hover {
+  background: var(--primary-dark);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: #f3f4f6;
+}
+
+.error {
+  color: var(--danger);
+  font-size: .85rem;
+  min-height: 18px;
+}
+
+@media (max-width: 720px) {
+  .container { padding: 16px; }
+  .title { font-size: 1.25rem; }
+  .contract-box { height: 260px; }
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+

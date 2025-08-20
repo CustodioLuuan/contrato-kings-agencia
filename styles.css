@@ -125,12 +125,23 @@ textarea:focus {
 .signature-pad canvas {
   width: 100%;
   height: 100%;
+  /* Melhor experiência de toque em Android/iOS */
+  touch-action: none;
+  -ms-touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .signature-actions {
   display: flex;
   justify-content: flex-end;
   margin-top: 8px;
+}
+
+/* Fallback: esconde o botão de tela cheia em telas largas, mas JS faz a detecção definitiva */
+@media (hover: hover) and (pointer: fine) {
+  #openSignatureFullscreen { display: none; }
 }
 
 .check {
@@ -195,11 +206,114 @@ textarea:focus {
   min-height: 18px;
 }
 
+/* Tela cheia de assinatura */
+.hidden { display: none !important; }
+
+.sigfs {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  color: #fff;
+}
+
+/* Barra lateral à direita */
+.sigfs-toolbar {
+  order: 2; /* manda a barra para a direita */
+  width: 72px;
+  min-width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+}
+
+.sigfs-content {
+  display: flex;
+  flex-direction: row; /* título antes dos botões na horizontal */
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transform: rotate(90deg); /* deixa textos e botões na horizontal ao virar o telefone */
+  transform-origin: center;
+  text-align: center;
+}
+
+.sigfs-title { font-weight: 700; font-size: 0.9rem; }
+.sigfs-actions { display: flex; gap: 6px; justify-content: center; }
+.sigfs .btn { padding: 8px 10px; font-size: 0.9rem; }
+.sigfs .btn-ghost { padding: 8px 10px; color: #e5e7eb; border-color: rgba(255,255,255,0.35); background: transparent; }
+.sigfs .btn-ghost:hover { background: rgba(255,255,255,0.12); color: #ffffff; border-color: rgba(255,255,255,0.5); }
+.sigfs .btn-ghost:active { background: rgba(255,255,255,0.18); }
+
+.sigfs-canvas-wrap {
+  order: 1;
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.sigfs-canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  display: block;
+}
+
+/* Evita bounce/scroll em iOS durante assinatura */
+.sigfs { overscroll-behavior: none; }
+body.sigfs-lock { overflow: hidden; }
+
+/* Ajusta em telas muito estreitas */
+@media (max-width: 380px) {
+  .sigfs-toolbar { width: 64px; min-width: 64px; }
+  .sigfs-title { font-size: 0.85rem; }
+  .sigfs .btn { padding: 7px 9px; font-size: 0.85rem; }
+}
+
 @media (max-width: 720px) {
   .container { padding: 16px; }
   .title { font-size: 1.25rem; }
   .contract-box { height: 260px; }
   .form-grid { grid-template-columns: 1fr; }
+}
+
+/* Regras extra para smartphones (Android/iOS) */
+@media (max-width: 480px) {
+  body { font-size: 16px; }
+  .page { padding: 0; }
+  .container {
+    max-width: 100%;
+    width: 100vw;
+    min-height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+    /* padding interno com safe-area para evitar notch, mas sem margens externas */
+    padding-top: calc(14px + env(safe-area-inset-top));
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    padding-left: calc(16px + env(safe-area-inset-left));
+    padding-right: calc(16px + env(safe-area-inset-right));
+  }
+  .title { font-size: 1.2rem; }
+  .contract-box { height: 50vh; }
+  .signature-pad { height: 180px; }
+  input[type="text"], input[type="email"], textarea { font-size: 16px; }
+  .actions { margin-top: 12px; }
+  .actions .btn { width: 100%; padding: 14px 18px; font-size: 1rem; }
+  .signature-actions { justify-content: stretch; }
+  .signature-actions .btn { width: 100%; }
+  .doc-type { flex-wrap: wrap; gap: 10px; }
+  .radio { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); }
+}
+
+@media (max-width: 360px) {
+  .title { font-size: 1.1rem; }
+  .signature-pad { height: 160px; }
 }
 
 

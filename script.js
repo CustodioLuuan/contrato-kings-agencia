@@ -19,7 +19,23 @@
   // Signature Pad setup
   const canvas = document.getElementById('signatureCanvas');
   const clearBtn = document.getElementById('clearSignature');
+  const fsOpenBtn = document.getElementById('openSignatureFullscreen');
+  const fsModal = document.getElementById('signatureFullscreen');
+  const fsCanvas = document.getElementById('signatureCanvasFS');
+  const fsClearBtn = document.getElementById('fsClear');
+  const fsCloseBtn = document.getElementById('fsClose');
   let signaturePad;
+  let signaturePadFS;
+  let hasSignatureImage = false;
+  let signatureImageDataURL = null;
+
+  function isTouchDevice() {
+    return (
+      'ontouchstart' in window ||
+      (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+      (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
+    );
+  }
 
   function resizeCanvasToDisplaySize(canvasEl) {
     const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -38,6 +54,40 @@
       minWidth: 0.8,
       maxWidth: 2.2
     });
+    // Evita scroll enquanto assina em mobile
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
+  }
+
+  function sizeFsCanvas() {
+    const wrap = document.getElementById('sigfsWrap');
+    if (!wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const width = Math.max(1, Math.floor(rect.width));
+    const height = Math.max(1, Math.floor(rect.height));
+    // Ajuste fino: compensa possíveis arredondamentos de viewport em iOS/Android
+    const scaledWidth = Math.round(width * ratio);
+    const scaledHeight = Math.round(height * ratio);
+    fsCanvas.width = scaledWidth;
+    fsCanvas.height = scaledHeight;
+    const ctx = fsCanvas.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(ratio, ratio);
+    fsCanvas.style.width = width + 'px';
+    fsCanvas.style.height = height + 'px';
+  }
+
+  function initSignaturePadFS() {
+    sizeFsCanvas();
+    signaturePadFS = new SignaturePad(fsCanvas, {
+      backgroundColor: '#ffffff',
+      penColor: '#111827',
+      minWidth: 0.9,
+      maxWidth: 2.4
+    });
+    fsCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); }, { passive: false });
+    fsCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
   }
 
   window.addEventListener('resize', () => {
@@ -45,11 +95,20 @@
     resizeCanvasToDisplaySize(canvas);
     if (signaturePad) {
       signaturePad.clear();
-      if (data) signaturePad.fromData(data);
+      if (data) {
+        signaturePad.fromData(data);
+      } else if (hasSignatureImage && signatureImageDataURL) {
+        drawImageOnCanvasContain(signatureImageDataURL);
+      }
     }
   });
 
   initSignaturePad();
+
+  // Oculta o botão de tela cheia em dispositivos não-touch (desktop)
+  if (fsOpenBtn && !isTouchDevice()) {
+    fsOpenBtn.style.display = 'none';
+  }
 
   function renderContractPreview() {
     if (!contractContentEl) return;
@@ -71,6 +130,71 @@
 
   clearBtn.addEventListener('click', function() {
     if (signaturePad) signaturePad.clear();
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+    ctx.restore();
+    hasSignatureImage = false;
+    signatureImageDataURL = null;
+  });
+
+  function openFullscreenSignature() {
+    if (!fsModal) return;
+    fsModal.classList.remove('hidden');
+    document.body.classList.add('sigfs-lock');
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+        if (isPortrait) screen.orientation.lock('landscape').catch(() => {});
+      }
+    } catch (e) {}
+    if (!signaturePadFS) initSignaturePadFS(); else { sizeFsCanvas(); signaturePadFS.clear(); }
+    if (signaturePad && !signaturePad.isEmpty()) signaturePadFS.fromData(signaturePad.toData());
+    window.addEventListener('resize', sizeFsCanvas);
+    window.addEventListener('orientationchange', sizeFsCanvas);
+  }
+
+  function closeFullscreenSignature(saveBack = true) {
+    if (!fsModal) return;
+    if (saveBack && signaturePadFS && !signaturePadFS.isEmpty()) {
+      // Corrige orientação: se a tela estava em retrato, roda a imagem do FS
+      const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+      if (isPortrait) {
+        // Renderiza em um canvas auxiliar rotacionado 90°
+        const aux = document.createElement('canvas');
+        aux.width = fsCanvas.height;
+        aux.height = fsCanvas.width;
+        const actx = aux.getContext('2d');
+        actx.save();
+        actx.translate(aux.width / 2, aux.height / 2);
+        actx.rotate(-Math.PI / 2);
+        actx.drawImage(fsCanvas, -fsCanvas.width / 2, -fsCanvas.height / 2);
+        actx.restore();
+        signatureImageDataURL = aux.toDataURL('image/png');
+      } else {
+        signatureImageDataURL = fsCanvas.toDataURL('image/png');
+      }
+      hasSignatureImage = true;
+      signaturePad.clear();
+      drawImageOnCanvasContain(signatureImageDataURL);
+    }
+    fsModal.classList.add('hidden');
+    document.body.classList.remove('sigfs-lock');
+    window.removeEventListener('resize', sizeFsCanvas);
+    window.removeEventListener('orientationchange', sizeFsCanvas);
+  }
+
+  if (fsOpenBtn) fsOpenBtn.addEventListener('click', openFullscreenSignature);
+  if (fsClearBtn) fsClearBtn.addEventListener('click', () => signaturePadFS && signaturePadFS.clear());
+  if (fsCloseBtn) fsCloseBtn.addEventListener('click', () => closeFullscreenSignature(true));
+
+  // Fecha ao apertar back no Android/iOS
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !fsModal.classList.contains('hidden')) closeFullscreenSignature(false);
+  });
+  window.addEventListener('popstate', function() {
+    if (!fsModal.classList.contains('hidden')) closeFullscreenSignature(false);
   });
 
   function setError(fieldName, message) {
@@ -144,7 +268,7 @@
     // Endereço
     if (!enderecoInput.value.trim()) { setError('endereco', 'Informe o endereço'); ok = false; } else setError('endereco');
     // Assinatura
-    if (!signaturePad || signaturePad.isEmpty()) { setError('signature', 'Assine no campo acima'); ok = false; } else setError('signature');
+    if (!signaturePad || (signaturePad.isEmpty() && !hasSignatureImage)) { setError('signature', 'Assine no campo acima'); ok = false; } else setError('signature');
     // Aceite
     if (!aceiteInput.checked) { setError('aceite', 'É necessário aceitar os termos'); ok = false; } else setError('aceite');
 
@@ -162,6 +286,28 @@
       doc.text(line, x, y + (idx * lineHeight));
     });
     return y + split.length * lineHeight;
+  }
+
+  function drawImageOnCanvasContain(dataURL) {
+    const img = new Image();
+    img.onload = function() {
+      const ctx = canvas.getContext('2d');
+      // Garante densidade correta
+      resizeCanvasToDisplaySize(canvas);
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+      const targetW = canvas.clientWidth;
+      const targetH = canvas.clientHeight;
+      const scale = Math.min(targetW / img.width, targetH / img.height);
+      const drawW = img.width * scale;
+      const drawH = img.height * scale;
+      const dx = (targetW - drawW) / 2;
+      const dy = (targetH - drawH) / 2;
+      ctx.drawImage(img, dx, dy, drawW, drawH);
+      ctx.restore();
+    };
+    img.src = dataURL;
   }
 
   function buildPdf() {
@@ -223,7 +369,9 @@
     cursorY += 8;
 
     // Imagem da assinatura
-    const signatureDataURL = signaturePad.toDataURL('image/png');
+    const signatureDataURL = hasSignatureImage && signatureImageDataURL
+      ? signatureImageDataURL
+      : signaturePad.toDataURL('image/png');
     const sigWidth = 280;
     const sigHeight = 100;
     doc.addImage(signatureDataURL, 'PNG', margin, cursorY, sigWidth, sigHeight);

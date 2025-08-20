@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>Contrato de Prestação de Serviços – Kings Agência</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -123,6 +126,7 @@ Kings Agência – CONTRATADO
           </div>
           <div class="signature-actions">
             <button type="button" class="btn btn-ghost" id="clearSignature">Limpar assinatura</button>
+            <button type="button" class="btn" id="openSignatureFullscreen">Tela cheia</button>
           </div>
           <small class="error" data-for="signature"></small>
         </div>
@@ -139,6 +143,22 @@ Kings Agência – CONTRATADO
       </form>
     </section>
   </main>
+
+  <!-- Modal de assinatura em tela cheia -->
+  <div id="signatureFullscreen" class="sigfs hidden" aria-hidden="true">
+    <div class="sigfs-toolbar">
+      <div class="sigfs-content">
+        <div class="sigfs-title">Assinatura</div>
+        <div class="sigfs-actions">
+          <button type="button" class="btn btn-ghost" id="fsClear">Limpar</button>
+          <button type="button" class="btn" id="fsClose">Concluir</button>
+        </div>
+      </div>
+    </div>
+    <div class="sigfs-canvas-wrap" id="sigfsWrap">
+      <canvas id="signatureCanvasFS"></canvas>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

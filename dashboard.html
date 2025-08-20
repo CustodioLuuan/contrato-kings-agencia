@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Kings Agência</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <div class="dashboard">
+    <header class="header">
+      <h1>🏢 Dashboard Kings Agência</h1>
+      <button class="btn btn-primary" id="newContractBtn">+ Novo Contrato</button>
+    </header>
+
+    <main class="main">
+      <div class="stats">
+        <div class="stat-card">
+          <h3>Total de Contratos</h3>
+          <span class="stat-number" id="totalContracts">0</span>
+        </div>
+        <div class="stat-card">
+          <h3>Pendentes</h3>
+          <span class="stat-number pending" id="pendingContracts">0</span>
+        </div>
+        <div class="stat-card">
+          <h3>Assinados</h3>
+          <span class="stat-number signed" id="signedContracts">0</span>
+        </div>
+      </div>
+
+      <div class="contracts-section">
+        <h2>Contratos</h2>
+        <div class="contracts-list" id="contractsList">
+          <!-- Contratos serão inseridos aqui dinamicamente -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal para criar/editar contrato -->
+  <div class="modal" id="contractModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Novo Contrato</h2>
+        <button class="close-btn" id="closeModal">&times;</button>
+      </div>
+      
+      <form id="contractForm">
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="clientName">Nome do Cliente *</label>
+            <input type="text" id="clientName" name="clientName" required />
+          </div>
+          
+          <div class="form-field">
+            <label for="clientEmail">E-mail *</label>
+            <input type="email" id="clientEmail" name="clientEmail" required />
+          </div>
+          
+          <div class="form-field">
+            <label for="clientDoc">CPF/CNPJ *</label>
+            <input type="text" id="clientDoc" name="clientDoc" required />
+          </div>
+          
+          <div class="form-field">
+            <label for="clientAddress">Endereço *</label>
+            <input type="text" id="clientAddress" name="clientAddress" required />
+          </div>
+          
+          <div class="form-field">
+            <label for="contractValue">Valor do Contrato *</label>
+            <input type="text" id="contractValue" name="contractValue" placeholder="R$ 0,00" required />
+          </div>
+          
+          <div class="form-field">
+            <label for="paymentTerms">Condições de Pagamento</label>
+            <input type="text" id="paymentTerms" name="paymentTerms" placeholder="Ex: 30% na assinatura e 70% na entrega" />
+          </div>
+          
+          <div class="form-field">
+            <label for="dueDate">Data de Vencimento</label>
+            <input type="date" id="dueDate" name="dueDate" />
+          </div>
+          
+          <div class="form-field">
+            <label for="contractNotes">Observações</label>
+            <textarea id="contractNotes" name="contractNotes" rows="3"></textarea>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Contrato</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para visualizar contrato -->
+  <div class="modal" id="viewModal">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h2>Detalhes do Contrato</h2>
+        <button class="close-btn" id="closeViewModal">&times;</button>
+      </div>
+      
+      <div class="contract-details" id="contractDetails">
+        <!-- Detalhes do contrato serão inseridos aqui -->
+      </div>
+      
+      <div class="contract-actions">
+        <button class="btn btn-secondary" id="copyLinkBtn">Copiar Link</button>
+        <button class="btn btn-primary" id="sendEmailBtn">Enviar por E-mail</button>
+        <button class="btn btn-danger" id="deleteContractBtn">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
+

@@ -456,6 +456,28 @@
       }
       return;
     }
+    
+    // Marcar contrato como assinado se vier de um link personalizado
+    const urlParams = new URLSearchParams(window.location.search);
+    const contractId = urlParams.get('contract');
+    
+    if (contractId) {
+      // Atualizar status do contrato no localStorage
+      const contracts = JSON.parse(localStorage.getItem('contracts') || '[]');
+      const contractIndex = contracts.findIndex(c => c.id === contractId);
+      
+      if (contractIndex !== -1) {
+        contracts[contractIndex].status = 'signed';
+        contracts[contractIndex].signedAt = new Date().toISOString();
+        localStorage.setItem('contracts', JSON.stringify(contracts));
+        
+        // Mostrar mensagem de sucesso
+        setTimeout(() => {
+          alert('Contrato assinado com sucesso! O PDF será baixado automaticamente.');
+        }, 100);
+      }
+    }
+    
     buildPdf();
   });
 })();

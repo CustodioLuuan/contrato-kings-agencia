@@ -455,3 +455,63 @@ body.sigfs-lock { overflow: hidden; }
   }
 }
 
+/* Mensagens de status do contrato */
+.signed-message, .not-found-message {
+  margin: 20px 0;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.signed-banner {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #f59e0b;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.signed-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+}
+
+.signed-text h3 {
+  margin: 0 0 10px 0;
+  color: #92400e;
+  font-size: 1.5rem;
+}
+
+.signed-text p {
+  margin: 0;
+  color: #92400e;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.error-banner {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  border: 2px solid #ef4444;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+}
+
+.error-text h3 {
+  margin: 0 0 10px 0;
+  color: #991b1b;
+  font-size: 1.5rem;
+}
+
+.error-text p {
+  margin: 0;
+  color: #991b1b;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+

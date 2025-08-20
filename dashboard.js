@@ -354,27 +354,133 @@ Kings Agência
     }
 
     try {
-      // Criar um link temporário para abrir a página de contrato
-      const baseUrl = getBaseUrl();
-      const contractUrl = `${baseUrl}/index.html?contract=${contract.id}`;
+      // Criar conteúdo HTML do contrato para PDF
+      const contractHtml = this.generateContractHtml(contract);
       
-      // Abrir em nova aba para gerar o PDF
-      const newWindow = window.open(contractUrl, '_blank');
+      // Gerar e baixar PDF
+      this.generateAndDownloadPdf(contractHtml, contract);
       
-      if (newWindow) {
-        this.showNotification('📄 Abrindo contrato para download do PDF...', 'info');
-        
-        // Aguardar um pouco e mostrar instruções
-        setTimeout(() => {
-          this.showNotification('💡 Na nova aba, clique em "Enviar e Baixar PDF" para baixar o arquivo', 'info');
-        }, 2000);
-      } else {
-        this.showNotification('❌ Erro ao abrir contrato. Verifique se o popup está bloqueado.', 'danger');
-      }
     } catch (error) {
-      console.error('Erro ao abrir contrato:', error);
-      this.showNotification('❌ Erro ao abrir contrato para download', 'danger');
+      console.error('Erro ao gerar PDF:', error);
+      this.showNotification('❌ Erro ao gerar PDF do contrato', 'danger');
     }
+  }
+
+  // Gerar HTML do contrato para PDF
+  generateContractHtml(contract) {
+    const signedDate = new Date(contract.signedAt);
+    const paymentDate = contract.paymentDate ? new Date(contract.paymentDate) : new Date();
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+          .contract-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+          .section { margin: 20px 0; }
+          .section-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333; }
+          .signature-section { margin-top: 40px; border-top: 1px solid #ccc; padding-top: 20px; }
+          .signature-line { border-top: 1px solid #000; margin-top: 30px; padding-top: 10px; }
+          .company-info { text-align: center; margin-top: 40px; font-size: 14px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="contract-title">CONTRATO DE PRESTAÇÃO DE SERVIÇOS</div>
+          <div style="font-size: 18px; color: #666;">KINGS AGÊNCIA</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">1. DADOS DO CONTRATANTE</div>
+          <p><strong>Nome Completo:</strong> ${contract.clientName}</p>
+          <p><strong>CPF/CNPJ:</strong> ${contract.clientDoc}</p>
+          <p><strong>Data de Pagamento:</strong> ${paymentDate.toLocaleDateString('pt-BR')}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">2. OBJETO DO CONTRATO</div>
+          <p>Este contrato tem por objeto a prestação de serviços de marketing digital e gestão de redes sociais pela Kings Agência, conforme especificações técnicas e cronograma estabelecidos entre as partes.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">3. VALOR E FORMA DE PAGAMENTO</div>
+          <p>O valor dos serviços será conforme orçamento aprovado, com pagamento realizado na data acordada de ${paymentDate.toLocaleDateString('pt-BR')}.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">4. PRAZO DE EXECUÇÃO</div>
+          <p>Os serviços serão executados conforme cronograma estabelecido entre as partes, com início após a assinatura deste contrato.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">5. RESPONSABILIDADES</div>
+          <p><strong>Kings Agência:</strong> Compromete-se a executar os serviços com qualidade profissional e dentro dos prazos estabelecidos.</p>
+          <p><strong>Cliente:</strong> Compromete-se a fornecer todas as informações necessárias e realizar os pagamentos nos prazos acordados.</p>
+        </div>
+
+        <div class="signature-section">
+          <div class="section-title">ASSINATURAS</div>
+          
+          <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+            <div style="width: 45%;">
+              <div class="signature-line">
+                <p style="text-align: center; margin-top: 10px;"><strong>${contract.clientName}</strong></p>
+                <p style="text-align: center; font-size: 12px;">Cliente</p>
+                <p style="text-align: center; font-size: 12px;">CPF/CNPJ: ${contract.clientDoc}</p>
+              </div>
+            </div>
+            
+            <div style="width: 45%;">
+              <div class="signature-line">
+                <p style="text-align: center; margin-top: 10px;"><strong>Kings Agência</strong></p>
+                <p style="text-align: center; font-size: 12px;">Prestador de Serviços</p>
+                <p style="text-align: center; font-size: 12px;">CNPJ: 14.599.800/0001-37</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="company-info">
+          <p><strong>Kings Agência</strong> - Marketing Digital e Gestão de Redes Sociais</p>
+          <p>Itajaí - SC | www.kingsagencia.com.br</p>
+          <p>Contrato assinado digitalmente em ${signedDate.toLocaleDateString('pt-BR')} às ${signedDate.toLocaleTimeString('pt-BR')}</p>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  // Gerar e baixar PDF
+  generateAndDownloadPdf(htmlContent, contract) {
+    // Criar um elemento temporário para renderizar o HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    document.body.appendChild(tempDiv);
+
+    // Usar jsPDF para gerar o PDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    // Converter HTML para PDF
+    pdf.html(tempDiv, {
+      callback: function(pdf) {
+        // Baixar o PDF
+        const fileName = `contrato_${contract.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(fileName);
+        
+        // Remover elemento temporário
+        document.body.removeChild(tempDiv);
+        
+        // Mostrar notificação de sucesso
+        this.showNotification('✅ PDF baixado com sucesso!', 'success');
+      }.bind(this),
+      x: 15,
+      y: 15,
+      width: 180
+    });
   }
 }
 

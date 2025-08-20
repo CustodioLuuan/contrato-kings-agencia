@@ -185,9 +185,7 @@
         <small class="error" data-for="aceite"></small>
 
         <div class="actions">
-          <button type="submit" class="btn btn-primary" onclick="handlePdfGeneration()">
-            Enviar e Baixar PDF
-          </button>
+          <button type="submit" class="btn" id="submitBtn">Enviar e Baixar PDF</button>
         </div>
       </form>
     </section>
@@ -212,142 +210,154 @@
   <script src="config.js"></script>
   <script src="script.js"></script>
   <script>
-    // Load contract data if there's a URL parameter
+    // Carregar dados do contrato se houver parâmetro na URL
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
       const contractId = urlParams.get('contract');
-
+      
       if (contractId) {
+        // Carregar dados do localStorage
         const contracts = JSON.parse(localStorage.getItem('contracts') || '[]');
         const contract = contracts.find(c => c.id === contractId);
-
+        
         if (contract) {
-          // Check if the contract has already been signed
+          // Verificar se o contrato já foi assinado
           if (contract.status === 'signed') {
-            // Contract already signed - show message and disable form
+            // Contrato já assinado - mostrar mensagem e desabilitar formulário
             showContractSignedMessage(contract);
             disableForm();
           } else {
-            // Pending contract - allow signing
+            // Contrato pendente - permitir assinatura
             showContractPendingMessage(contract);
             enableForm(contract);
           }
         } else {
-          // Contract not found
+          // Contrato não encontrado
           showContractNotFoundMessage();
         }
       }
     });
 
-    // Function to show contract signed message
     function showContractSignedMessage(contract) {
-      const formContainer = document.getElementById('contractForm');
-      const contractContent = document.getElementById('contractContent');
-      
-      // Hide the form
-      formContainer.style.display = 'none';
-      
-      // Show signed message
-      const signedMessage = document.createElement('div');
-      signedMessage.className = 'signed-message';
-      signedMessage.innerHTML = `
-        <div class="signed-banner">
-          <div class="signed-icon">✅</div>
-          <div class="signed-text">
-            <h3>Contrato já foi assinado!</h3>
-            <p>Este contrato foi assinado em ${new Date(contract.signedAt).toLocaleDateString('pt-BR')} às ${new Date(contract.signedAt).toLocaleTimeString('pt-BR')}</p>
-          </div>
-        </div>
+      // Criar mensagem de contrato já assinado
+      const signedDiv = document.createElement('div');
+      signedDiv.style.cssText = `
+        background: #fef3c7;
+        color: #92400e;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 1rem;
+        border: 1px solid #fbbf24;
+        text-align: center;
+      `;
+      signedDiv.innerHTML = `
+        <div style="font-size: 2rem; margin-bottom: 8px;">✅</div>
+        <strong>Contrato já foi assinado!</strong><br>
+        <span style="font-size: 0.9rem; opacity: 0.8;">
+          Este contrato foi assinado em ${new Date(contract.signedAt).toLocaleDateString('pt-BR')} às ${new Date(contract.signedAt).toLocaleTimeString('pt-BR')}
+        </span>
       `;
       
-      contractContent.appendChild(signedMessage);
-    }
-
-    // Function to show contract pending message
-    function showContractPendingMessage(contract) {
-      const contractContent = document.getElementById('contractContent');
+      // Substituir o formulário pela mensagem
+      const form = document.getElementById('contractForm');
+      form.parentNode.insertBefore(signedDiv, form);
+      form.style.display = 'none';
       
-      // Update contract content with client data
+      // Atualizar o contrato no texto com os dados do cliente
       updateContractContent(contract);
-      
-      // Show the form
-      enableForm(contract);
     }
 
-    // Function to show contract not found message
-    function showContractNotFoundMessage() {
-      const formContainer = document.getElementById('contractForm');
-      const contractContent = document.getElementById('contractContent');
-      
-      // Hide the form
-      formContainer.style.display = 'none';
-      
-      // Show not found message
-      const notFoundMessage = document.createElement('div');
-      notFoundMessage.className = 'not-found-message';
-      notFoundMessage.innerHTML = `
-        <div class="error-banner">
-          <div class="error-icon">❌</div>
-          <div class="error-text">
-            <h3>Contrato não encontrado!</h3>
-            <p>O contrato solicitado não foi encontrado ou foi removido.</p>
-          </div>
-        </div>
+    function showContractPendingMessage(contract) {
+      // Criar mensagem de contrato pendente
+      const pendingDiv = document.createElement('div');
+      pendingDiv.style.cssText = `
+        background: #d1fae5;
+        color: #065f46;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+        border: 1px solid #a7f3d0;
+      `;
+      pendingDiv.innerHTML = `
+        <strong>Contrato pré-preenchido</strong><br>
+        Os dados foram carregados automaticamente. Você pode prosseguir com a assinatura.
       `;
       
-      contractContent.appendChild(notFoundMessage);
+      document.querySelector('.container').insertBefore(pendingDiv, document.querySelector('.contract-wrapper'));
+      
+      // Atualizar o contrato no texto com os dados do cliente
+      updateContractContent(contract);
     }
 
-    // Function to update contract content with client data
-    function updateContractContent(contract) {
-      // Replace placeholders with actual data
-      const contractText = document.querySelector('.contract-content');
-      if (contractText) {
-        contractText.innerHTML = contractText.innerHTML
-          .replace('[Nome do Cliente]', contract.clientName)
-          .replace('[●]', contract.clientDoc)
-          .replace('[●] de cada mês', '15 de cada mês')
-          .replace('[Local], [Data].', `Itajaí, ${new Date().toLocaleDateString('pt-BR')}.`)
-          .replace('[Cliente]', contract.clientName);
-      }
-    }
-
-    // Function to enable form
-    function enableForm(contract) {
+    function showContractNotFoundMessage() {
+      // Criar mensagem de contrato não encontrado
+      const notFoundDiv = document.createElement('div');
+      notFoundDiv.style.cssText = `
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 1rem;
+        border: 1px solid #f87171;
+        text-align: center;
+      `;
+      notFoundDiv.innerHTML = `
+        <div style="font-size: 2rem; margin-bottom: 8px;">❌</div>
+        <strong>Contrato não encontrado!</strong><br>
+        <span style="font-size: 0.9rem; opacity: 0.8;">
+          O link do contrato é inválido ou expirou.
+        </span>
+      `;
+      
+      // Substituir o formulário pela mensagem
       const form = document.getElementById('contractForm');
-      form.style.display = 'block';
-      
-      // Update form fields with contract data
-      document.getElementById('nome').value = contract.clientName;
-      document.getElementById('doc').value = contract.clientDoc;
-      
-      // Mark fields as readonly to prevent editing
-      document.getElementById('nome').readOnly = true;
-      document.getElementById('doc').readOnly = true;
-      
-      // Add visual class to indicate it's pre-filled
-      document.getElementById('nome').classList.add('pre-filled');
-      document.getElementById('doc').classList.add('pre-filled');
-    }
-
-    // Function to disable form
-    function disableForm() {
-      const form = document.getElementById('contractForm');
+      form.parentNode.insertBefore(notFoundDiv, form);
       form.style.display = 'none';
     }
 
-    // Function to handle PDF generation and page reload
-    function handlePdfGeneration() {
-      // Submit the form to trigger validation and PDF generation
-      const form = document.getElementById('contractForm');
-      if (form) {
-        form.dispatchEvent(new Event('submit'));
-        
-        // After a short delay, reload the page to show signed message
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      }
+    function updateContractContent(contract) {
+      // Atualizar o contrato no texto com os dados do cliente
+      const contractContent = document.querySelector('.contract-content');
+      let contractText = contractContent.textContent;
+      
+      // Substituir placeholders pelos dados reais
+      contractText = contractText.replace('[Nome do Cliente]', contract.clientName);
+      contractText = contractText.replace('[●]', contract.clientDoc);
+      contractText = contractText.replace('R$ [●]', contract.contractValue);
+      contractText = contractText.replace('[ex.: 30% na assinatura e 70% na entrega]', contract.paymentTerms || '30% na assinatura e 70% na entrega');
+      contractText = contractText.replace('[●] de cada mês', '15 de cada mês');
+      contractText = contractText.replace('[Local], [Data].', `${contract.clientAddress.split(',')[0] || 'Itajaí'}, ${new Date().toLocaleDateString('pt-BR')}.`);
+      contractText = contractText.replace('[Cliente]', contract.clientName);
+      
+      contractContent.textContent = contractText;
+    }
+
+    function enableForm(contract) {
+      // Preencher formulário com dados do contrato
+      document.getElementById('nome').value = contract.clientName;
+      document.getElementById('email').value = contract.clientEmail;
+      document.getElementById('doc').value = contract.clientDoc;
+      document.getElementById('endereco').value = contract.clientAddress;
+      
+      // Marcar campos como readonly para evitar edição
+      document.getElementById('nome').readOnly = true;
+      document.getElementById('email').readOnly = true;
+      document.getElementById('doc').readOnly = true;
+      document.getElementById('endereco').readOnly = true;
+      
+      // Adicionar classe visual para indicar que está preenchido
+      document.getElementById('nome').classList.add('pre-filled');
+      document.getElementById('email').classList.add('pre-filled');
+      document.getElementById('doc').classList.add('pre-filled');
+      document.getElementById('endereco').classList.add('pre-filled');
+    }
+
+    function disableForm() {
+      // O formulário já está escondido pela função showContractSignedMessage
+      // Esta função pode ser expandida se necessário no futuro
     }
   </script>
 </body>

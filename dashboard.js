@@ -239,18 +239,12 @@ class ContractManager {
     const contract = this.contracts.find(c => c.id === this.currentContractId);
     if (!contract) return;
     
-    // Gerar link baseado na URL atual
-    let baseUrl = window.location.origin;
-    
-    // Se estiver rodando localmente, usar localhost
-    if (baseUrl.includes('file://')) {
-      baseUrl = 'http://localhost:8000';
-    }
-    
+    // Usar a função de configuração para obter a URL base
+    const baseUrl = getBaseUrl();
     const link = `${baseUrl}/index.html?contract=${contract.id}`;
     
     // Mostrar aviso se estiver rodando localmente
-    if (window.location.protocol === 'file:') {
+    if (isLocalDevelopment()) {
       this.showNotification('⚠️ Para links funcionais, use o servidor local (python server.py)', 'warning');
     }
     
@@ -272,14 +266,8 @@ class ContractManager {
     const contract = this.contracts.find(c => c.id === this.currentContractId);
     if (!contract) return;
     
-    // Gerar link baseado na URL atual
-    let baseUrl = window.location.origin;
-    
-    // Se estiver rodando localmente, usar localhost
-    if (baseUrl.includes('file://')) {
-      baseUrl = 'http://localhost:8000';
-    }
-    
+    // Usar a função de configuração para obter a URL base
+    const baseUrl = getBaseUrl();
     const link = `${baseUrl}/index.html?contract=${contract.id}`;
     const subject = encodeURIComponent('Contrato para Assinatura - Kings Agência');
     const body = encodeURIComponent(`

@@ -94,6 +94,50 @@ function updateClearButtonState() {
   }
 }
 
+function showNotification(message, type = 'success', duration = 5000) {
+  // Remover notificações existentes
+  const existingNotifications = document.querySelectorAll('.notification');
+  existingNotifications.forEach(notification => notification.remove());
+  
+  // Criar notificação
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  
+  // Definir ícone baseado no tipo
+  let icon = '✅';
+  if (type === 'error') icon = '❌';
+  if (type === 'warning') icon = '⚠️';
+  if (type === 'info') icon = 'ℹ️';
+  
+  notification.innerHTML = `
+    <div class="notification-content">
+      <div class="notification-icon">${icon}</div>
+      <div class="notification-message">${message}</div>
+      <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+    </div>
+  `;
+  
+  // Adicionar ao body
+  document.body.appendChild(notification);
+  
+  // Animar entrada
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 100);
+  
+  // Remover automaticamente
+  if (duration > 0) {
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 300);
+    }, duration);
+  }
+}
+
 function clearSignature() {
   if (signaturePad) {
     signaturePad.clear();
@@ -126,110 +170,144 @@ function submitContract() {
     contracts[contractIndex].signedAt = new Date().toISOString();
     localStorage.setItem('contracts', JSON.stringify(contracts));
     
-    // Mostrar mensagem de sucesso
-    alert('Contrato assinado com sucesso! O PDF será baixado automaticamente.');
-    
-    // Gerar e baixar PDF
-    buildPdf();
+    // Mostrar notificação de sucesso
+    showNotification('Contrato assinado com sucesso! O PDF será baixado automaticamente.', 'success', 3000);
     
     // Atualizar interface
     disableForm();
+    
+    // Gerar e baixar PDF após um pequeno delay
+    setTimeout(() => {
+      buildPdf();
+    }, 500);
+    
+    // Recarregar página após 3 segundos para mostrar o status atualizado
+    setTimeout(() => {
+      window.location.reload();
+    }, 3000);
   }
 }
 
 function buildPdf() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-  
-  const margin = 48;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const usable = pageWidth - margin * 2;
-  let cursorY = margin;
-  
-  // Título
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text('Contrato de Prestação de Serviços – Kings Agência', pageWidth / 2, cursorY, { align: 'center' });
-  cursorY += 20;
-  
-  // Conteúdo do contrato
-  const contractContent = document.querySelector('.contract-content');
-  const contractText = contractContent.innerText;
-  
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  
-  const lines = doc.splitTextToSize(contractText, usable);
-  const lineHeight = 12;
-  
-  lines.forEach(function(line) {
-    if (cursorY > doc.internal.pageSize.getHeight() - margin - 160) {
+  try {
+    const { jsPDF } = window.jspdf;
+    if (!jsPDF) {
+      console.error('jsPDF não está disponível');
+      showNotification('Erro ao gerar PDF: jsPDF não está carregado', 'error');
+      return;
+    }
+    
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    
+    const margin = 48;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const usable = pageWidth - margin * 2;
+    let cursorY = margin;
+    
+    // Título
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('Contrato de Prestação de Serviços – Kings Agência', pageWidth / 2, cursorY, { align: 'center' });
+    cursorY += 20;
+    
+    // Conteúdo do contrato
+    const contractContent = document.querySelector('.contract-content');
+    if (!contractContent) {
+      console.error('Conteúdo do contrato não encontrado');
+      showNotification('Erro ao gerar PDF: conteúdo do contrato não encontrado', 'error');
+      return;
+    }
+    
+    const contractText = contractContent.innerText;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    
+    const lines = doc.splitTextToSize(contractText, usable);
+    const lineHeight = 12;
+    
+    lines.forEach(function(line) {
+      if (cursorY > doc.internal.pageSize.getHeight() - margin - 160) {
+        doc.addPage();
+        cursorY = margin;
+      }
+      doc.text(line, margin, cursorY);
+      cursorY += lineHeight;
+    });
+    
+    // Espaço para assinaturas
+    if (cursorY < doc.internal.pageSize.getHeight() - margin - 200) {
+      cursorY = doc.internal.pageSize.getHeight() - margin - 200;
+    } else {
       doc.addPage();
       cursorY = margin;
     }
-    doc.text(line, margin, cursorY);
-    cursorY += lineHeight;
-  });
-  
-  // Espaço para assinaturas
-  if (cursorY < doc.internal.pageSize.getHeight() - margin - 200) {
-    cursorY = doc.internal.pageSize.getHeight() - margin - 200;
-  } else {
-    doc.addPage();
-    cursorY = margin;
-  }
-  
-  // Assinatura da Kings Agência
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.text('Kings Agência – CONTRATADO:', margin, cursorY);
-  cursorY += 15;
-  
-  // Adicionar imagem da assinatura da Kings Agência
-  try {
-    const kingsSigWidth = 150;
-    const kingsSigHeight = 60;
-    doc.addImage('assets/signatures/kings-signature.png', 'PNG', margin, cursorY, kingsSigWidth, kingsSigHeight);
-    cursorY += kingsSigHeight + 20;
-  } catch (error) {
-    // Se não conseguir carregar a imagem, apenas adiciona o texto
+    
+    // Assinatura da Kings Agência
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Kings Agência – CONTRATADO:', margin, cursorY);
+    cursorY += 15;
+    
+    // Adicionar imagem da assinatura da Kings Agência
+    try {
+      const kingsSigWidth = 150;
+      const kingsSigHeight = 60;
+      doc.addImage('assets/signatures/kings-signature.png', 'PNG', margin, cursorY, kingsSigWidth, kingsSigHeight);
+      cursorY += kingsSigHeight + 20;
+    } catch (error) {
+      // Se não conseguir carregar a imagem, apenas adiciona o texto
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text('Assinatura da Kings Agência', margin, cursorY);
+      cursorY += 20;
+    }
+    
+    // Assinatura do Contratante
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Assinatura do Contratante:', margin, cursorY);
+    cursorY += 15;
+    
+    // Imagem da assinatura do contratante
+    if (signaturePad && !signaturePad.isEmpty()) {
+      const signatureDataURL = signaturePad.toDataURL('image/png');
+      const sigWidth = 280;
+      const sigHeight = 100;
+      doc.addImage(signatureDataURL, 'PNG', margin, cursorY, sigWidth, sigHeight);
+      cursorY += sigHeight + 10;
+    }
+    
+    // Nome e data da assinatura do contratante
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    doc.text('Assinatura da Kings Agência', margin, cursorY);
-    cursorY += 20;
+    
+    // Obter dados do contrato
+    const urlParams = new URLSearchParams(window.location.search);
+    const contractId = urlParams.get('contract');
+    const contracts = JSON.parse(localStorage.getItem('contracts') || '[]');
+    const contract = contracts.find(c => c.id === contractId);
+    
+    if (contract) {
+      doc.text(`Nome: ${contract.clientName}`, margin, cursorY);
+      cursorY += 12;
+      doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, margin, cursorY);
+    }
+    
+    // Nome do arquivo
+    const filename = contract 
+      ? `Contrato_${contract.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
+      : `Contrato_Kings_Agencia_${new Date().toISOString().split('T')[0]}.pdf`;
+    
+    // Salvar o PDF
+    doc.save(filename);
+    
+    console.log('PDF gerado com sucesso:', filename);
+    
+  } catch (error) {
+    console.error('Erro ao gerar PDF:', error);
+    showNotification('Erro ao gerar PDF. Tente novamente.', 'error');
   }
-  
-  // Assinatura do Contratante
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.text('Assinatura do Contratante:', margin, cursorY);
-  cursorY += 15;
-  
-  // Imagem da assinatura do contratante
-  const signatureDataURL = signaturePad.toDataURL('image/png');
-  const sigWidth = 280;
-  const sigHeight = 100;
-  doc.addImage(signatureDataURL, 'PNG', margin, cursorY, sigWidth, sigHeight);
-  
-  // Nome e data da assinatura do contratante
-  cursorY += sigHeight + 10;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text(`Nome: ${document.getElementById('signatureName').textContent}`, margin, cursorY);
-  cursorY += 12;
-  doc.text(`Data: ${document.getElementById('signatureDate').textContent}`, margin, cursorY);
-  
-  // Nome do arquivo
-  const urlParams = new URLSearchParams(window.location.search);
-  const contractId = urlParams.get('contract');
-  const contracts = JSON.parse(localStorage.getItem('contracts') || '[]');
-  const contract = contracts.find(c => c.id === contractId);
-  
-  const filename = contract 
-    ? `Contrato_${contract.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
-    : `Contrato_Kings_Agencia_${new Date().toISOString().split('T')[0]}.pdf`;
-  
-  doc.save(filename);
 }
 
 

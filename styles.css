@@ -498,6 +498,19 @@ body.sigfs-lock { overflow: hidden; }
   font-size: 12px;
 }
 
+.signature-image {
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.kings-signature {
+  max-width: 200px;
+  max-height: 80px;
+  object-fit: contain;
+  border: none;
+  background: transparent;
+}
+
 /* Ajustes responsivos para o contrato organizado */
 @media (max-width: 720px) {
   .contract-section {

@@ -171,25 +171,47 @@ function buildPdf() {
     cursorY += lineHeight;
   });
   
-  // Espaço para assinatura
-  if (cursorY < doc.internal.pageSize.getHeight() - margin - 160) {
-    cursorY = doc.internal.pageSize.getHeight() - margin - 160;
+  // Espaço para assinaturas
+  if (cursorY < doc.internal.pageSize.getHeight() - margin - 200) {
+    cursorY = doc.internal.pageSize.getHeight() - margin - 200;
   } else {
     doc.addPage();
     cursorY = margin;
   }
   
+  // Assinatura da Kings Agência
   doc.setFont('helvetica', 'bold');
-  doc.text('Assinatura do Contratante:', margin, cursorY);
-  cursorY += 8;
+  doc.setFontSize(12);
+  doc.text('Kings Agência – CONTRATADO:', margin, cursorY);
+  cursorY += 15;
   
-  // Imagem da assinatura
+  // Adicionar imagem da assinatura da Kings Agência
+  try {
+    const kingsSigWidth = 150;
+    const kingsSigHeight = 60;
+    doc.addImage('assets/signatures/kings-signature.png', 'PNG', margin, cursorY, kingsSigWidth, kingsSigHeight);
+    cursorY += kingsSigHeight + 20;
+  } catch (error) {
+    // Se não conseguir carregar a imagem, apenas adiciona o texto
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text('Assinatura da Kings Agência', margin, cursorY);
+    cursorY += 20;
+  }
+  
+  // Assinatura do Contratante
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('Assinatura do Contratante:', margin, cursorY);
+  cursorY += 15;
+  
+  // Imagem da assinatura do contratante
   const signatureDataURL = signaturePad.toDataURL('image/png');
   const sigWidth = 280;
   const sigHeight = 100;
   doc.addImage(signatureDataURL, 'PNG', margin, cursorY, sigWidth, sigHeight);
   
-  // Nome e data da assinatura
+  // Nome e data da assinatura do contratante
   cursorY += sigHeight + 10;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);

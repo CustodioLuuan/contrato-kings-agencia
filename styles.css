@@ -122,41 +122,6 @@ input.pre-filled:focus {
   box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
 }
 
-/* Banner de Status */
-.status-banner {
-  background: #d1fae5;
-  color: #065f46;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid #a7f3d0;
-  text-align: center;
-}
-
-.status-banner h2 {
-  margin: 0 0 8px 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.status-banner p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.status-banner.signed {
-  background: #fef3c7;
-  color: #92400e;
-  border-color: #fbbf24;
-}
-
-.status-banner.error {
-  background: #fee2e2;
-  color: #991b1b;
-  border-color: #f87171;
-}
-
 /* Seção de Assinatura */
 .signature-section {
   background: white;
@@ -199,6 +164,19 @@ input.pre-filled:focus {
 .signature-actions {
   margin-top: 10px;
   text-align: center;
+}
+
+.signature-info {
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 15px;
+}
+
+.signature-info p {
+  margin: 5px 0;
+  font-size: 13px;
+  color: #374151;
 }
 
 /* Botões de Ação */

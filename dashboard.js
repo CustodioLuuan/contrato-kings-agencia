@@ -119,6 +119,8 @@ class ContractManager {
       createdAt: new Date().toISOString(),
       signedAt: null
     };
+    
+    console.log('Dados do contrato sendo salvos:', contractData);
 
     if (this.currentContractId) {
       // Atualizar contrato existente

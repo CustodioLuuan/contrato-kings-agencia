@@ -283,6 +283,7 @@
       }
       
       console.log('Dia final que será usado:', diaPagamento);
+      alert('Dia que será usado: ' + diaPagamento + '\nData de pagamento: ' + contract.paymentDate);
       content = content.replace(/\[DIA_PAGAMENTO\]/g, diaPagamento);
       
       // Substituir valor do contrato

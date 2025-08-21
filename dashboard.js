@@ -66,8 +66,7 @@ class ContractManager {
       const day = String(today.getDate()).padStart(2, '0');
       const todayString = `${year}-${month}-${day}`;
       
-      console.log('Data atual:', todayString);
-      console.log('Data completa:', today);
+
       
       const paymentDateField = document.getElementById('paymentDate');
       paymentDateField.value = todayString;

@@ -196,7 +196,6 @@
         const contract = contracts.find(c => c.id === contractId);
         
         if (contract) {
-          console.log('Contrato encontrado:', contract);
           // Verificar se o contrato já foi assinado
           if (contract.status === 'signed') {
             // Contrato já assinado - desabilitar formulário
@@ -208,7 +207,6 @@
           // Atualizar o contrato no texto com os dados do cliente
           updateContractContent(contract);
         } else {
-          console.log('Contrato não encontrado');
           // Contrato não encontrado
           showContractNotFoundMessage();
         }
@@ -251,14 +249,21 @@
       const contractContent = document.querySelector('.contract-content');
       let content = contractContent.innerHTML;
       
-      console.log('Dados do contrato:', contract);
-      console.log('Conteúdo antes da substituição:', content);
+
       
       // Substituir placeholders pelos dados reais
       content = content.replace(/\[Nome do Cliente\]/g, contract.clientName || '[Nome do Cliente]');
       content = content.replace(/\[●\]/g, contract.clientDoc || '[●]');
       content = content.replace(/\[Local\]/g, 'Itajaí/SC');
-      content = content.replace(/\[Data\]/g, new Date().toLocaleDateString('pt-BR'));
+      
+      // Usar a data de pagamento do contrato em vez da data atual
+      let dataContrato = new Date().toLocaleDateString('pt-BR'); // valor padrão
+      if (contract.paymentDate) {
+        const dataPagamento = new Date(contract.paymentDate);
+        dataContrato = dataPagamento.toLocaleDateString('pt-BR');
+      }
+      content = content.replace(/\[Data\]/g, dataContrato);
+      
       content = content.replace(/\[Cliente\]/g, contract.clientName || '[Cliente]');
       
       // Substituir dia de pagamento
@@ -273,7 +278,7 @@
       const valorContrato = contract.contractValue || 'R$ 0,00';
       content = content.replace(/\[VALOR_CONTRATO\]/g, valorContrato);
       
-      console.log('Conteúdo após a substituição:', content);
+
       
       contractContent.innerHTML = content;
     }

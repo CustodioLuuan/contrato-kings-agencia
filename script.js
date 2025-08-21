@@ -35,6 +35,10 @@ function showContractSignedMessage(contract) {
     <p>Este contrato foi assinado em ${new Date(contract.signedAt).toLocaleDateString('pt-BR')} às ${new Date(contract.signedAt).toLocaleTimeString('pt-BR')}.</p>
   `;
   
+  // Atualizar informações da assinatura
+  document.getElementById('signatureName').textContent = contract.clientName;
+  document.getElementById('signatureDate').textContent = new Date(contract.signedAt).toLocaleDateString('pt-BR');
+  
   // Mostrar botão de download
   document.getElementById('downloadPdfBtn').style.display = 'inline-block';
 }
@@ -46,6 +50,10 @@ function showContractPendingMessage(contract) {
     <h2>📄 Contrato para assinatura</h2>
     <p>Contrato de ${contract.clientName} - CPF/CNPJ: ${contract.clientDoc}</p>
   `;
+  
+  // Atualizar informações da assinatura
+  document.getElementById('signatureName').textContent = contract.clientName;
+  document.getElementById('signatureDate').textContent = new Date().toLocaleDateString('pt-BR');
 }
 
 function showContractNotFoundMessage() {
@@ -205,6 +213,14 @@ function buildPdf() {
   const sigWidth = 280;
   const sigHeight = 100;
   doc.addImage(signatureDataURL, 'PNG', margin, cursorY, sigWidth, sigHeight);
+  
+  // Nome e data da assinatura
+  cursorY += sigHeight + 10;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`Nome: ${document.getElementById('signatureName').textContent}`, margin, cursorY);
+  cursorY += 12;
+  doc.text(`Data: ${document.getElementById('signatureDate').textContent}`, margin, cursorY);
   
   // Nome do arquivo
   const urlParams = new URLSearchParams(window.location.search);

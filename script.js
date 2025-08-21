@@ -204,13 +204,22 @@ function buildPdf() {
     const usable = pageWidth - margin * 2;
     let cursorY = margin;
     
-    // Título
+    // Título principal
     doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('CONTRATO DE PRESTAÇÃO DE SERVIÇOS', pageWidth / 2, cursorY, { align: 'center' });
+    cursorY += 15;
     doc.setFontSize(14);
-    doc.text('Contrato de Prestação de Serviços – Kings Agência', pageWidth / 2, cursorY, { align: 'center' });
+    doc.text('KINGS AGÊNCIA', pageWidth / 2, cursorY, { align: 'center' });
+    cursorY += 30;
+    
+    // Linha separadora
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(1);
+    doc.line(margin, cursorY, pageWidth - margin, cursorY);
     cursorY += 20;
     
-    // Conteúdo do contrato
+    // Conteúdo do contrato formatado
     const contractContent = document.querySelector('.contract-content');
     if (!contractContent) {
       console.error('Conteúdo do contrato não encontrado');
@@ -218,35 +227,108 @@ function buildPdf() {
       return;
     }
     
-    const contractText = contractContent.innerText;
+    // Processar o conteúdo HTML para manter formatação
+    const contractHTML = contractContent.innerHTML;
     
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
+    // Função para processar texto e remover emojis/ícones
+    function cleanText(text) {
+      return text
+        .replace(/[📄📝✅❌⚠️ℹ️🗑️]/g, '') // Remove emojis
+        .replace(/\s+/g, ' ') // Remove espaços extras
+        .trim();
+    }
     
-    const lines = doc.splitTextToSize(contractText, usable);
-    const lineHeight = 12;
-    
-    lines.forEach(function(line) {
-      if (cursorY > doc.internal.pageSize.getHeight() - margin - 160) {
+    // Função para adicionar texto com formatação
+    function addFormattedText(text, fontSize = 10, isBold = false, isCenter = false) {
+      if (cursorY > doc.internal.pageSize.getHeight() - margin - 200) {
         doc.addPage();
         cursorY = margin;
       }
-      doc.text(line, margin, cursorY);
-      cursorY += lineHeight;
+      
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      doc.setFontSize(fontSize);
+      
+      const cleanTextContent = cleanText(text);
+      if (cleanTextContent) {
+        if (isCenter) {
+          doc.text(cleanTextContent, pageWidth / 2, cursorY, { align: 'center' });
+        } else {
+          const lines = doc.splitTextToSize(cleanTextContent, usable);
+          lines.forEach(line => {
+            if (cursorY > doc.internal.pageSize.getHeight() - margin - 200) {
+              doc.addPage();
+              cursorY = margin;
+            }
+            doc.text(line, margin, cursorY);
+            cursorY += fontSize + 2;
+          });
+          return;
+        }
+        cursorY += fontSize + 4;
+      }
+    }
+    
+    // Processar seções do contrato
+    const sections = contractHTML.split(/<div class="contract-section">/);
+    
+    sections.forEach(section => {
+      if (section.trim()) {
+        // Extrair título da seção
+        const titleMatch = section.match(/<h3>(.*?)<\/h3>/);
+        if (titleMatch) {
+          const title = cleanText(titleMatch[1]);
+          addFormattedText(title, 12, true);
+          cursorY += 8;
+        }
+        
+        // Extrair parágrafos
+        const paragraphs = section.match(/<p>(.*?)<\/p>/g);
+        if (paragraphs) {
+          paragraphs.forEach(p => {
+            const content = p.replace(/<p>|<\/p>/g, '');
+            const isBold = content.includes('<strong>');
+            addFormattedText(content, 10, isBold);
+          });
+        }
+        
+        // Extrair listas
+        const lists = section.match(/<ul>(.*?)<\/ul>/g);
+        if (lists) {
+          lists.forEach(list => {
+            const items = list.match(/<li>(.*?)<\/li>/g);
+            if (items) {
+              items.forEach(item => {
+                const content = item.replace(/<li>|<\/li>/g, '');
+                addFormattedText('• ' + content, 10, false);
+              });
+            }
+          });
+        }
+        
+        cursorY += 15; // Espaçamento entre seções
+      }
     });
     
     // Espaço para assinaturas
-    if (cursorY < doc.internal.pageSize.getHeight() - margin - 200) {
-      cursorY = doc.internal.pageSize.getHeight() - margin - 200;
+    if (cursorY < doc.internal.pageSize.getHeight() - margin - 250) {
+      cursorY = doc.internal.pageSize.getHeight() - margin - 250;
     } else {
       doc.addPage();
       cursorY = margin;
     }
     
+    // Linha separadora antes das assinaturas
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(1);
+    doc.line(margin, cursorY, pageWidth - margin, cursorY);
+    cursorY += 20;
+    
+    // Título das assinaturas
+    addFormattedText('ASSINATURAS', 14, true, true);
+    cursorY += 20;
+    
     // Assinatura da Kings Agência
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.text('Kings Agência – CONTRATADO:', margin, cursorY);
+    addFormattedText('Kings Agência – CONTRATADO', 12, true);
     cursorY += 15;
     
     // Adicionar imagem da assinatura da Kings Agência
@@ -257,16 +339,14 @@ function buildPdf() {
       cursorY += kingsSigHeight + 20;
     } catch (error) {
       // Se não conseguir carregar a imagem, apenas adiciona o texto
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.text('Assinatura da Kings Agência', margin, cursorY);
-      cursorY += 20;
+      addFormattedText('Assinatura da Kings Agência', 10, false);
     }
     
+    // Espaçamento entre assinaturas
+    cursorY += 30;
+    
     // Assinatura do Contratante
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.text('Assinatura do Contratante:', margin, cursorY);
+    addFormattedText('Assinatura do Contratante', 12, true);
     cursorY += 15;
     
     // Imagem da assinatura do contratante
@@ -275,13 +355,10 @@ function buildPdf() {
       const sigWidth = 280;
       const sigHeight = 100;
       doc.addImage(signatureDataURL, 'PNG', margin, cursorY, sigWidth, sigHeight);
-      cursorY += sigHeight + 10;
+      cursorY += sigHeight + 15;
     }
     
     // Nome e data da assinatura do contratante
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    
     // Obter dados do contrato
     const urlParams = new URLSearchParams(window.location.search);
     const contractId = urlParams.get('contract');
@@ -289,9 +366,8 @@ function buildPdf() {
     const contract = contracts.find(c => c.id === contractId);
     
     if (contract) {
-      doc.text(`Nome: ${contract.clientName}`, margin, cursorY);
-      cursorY += 12;
-      doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, margin, cursorY);
+      addFormattedText(`Nome: ${contract.clientName}`, 10, false);
+      addFormattedText(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 10, false);
     }
     
     // Nome do arquivo

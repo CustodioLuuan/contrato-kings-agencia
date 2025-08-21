@@ -78,11 +78,26 @@ function initSignaturePad() {
   // Prevenir scroll em dispositivos touch
   canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
   canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+  
+  // Adicionar listeners para controlar o estado do botão de limpar
+  signaturePad.addEventListener('beginStroke', updateClearButtonState);
+  signaturePad.addEventListener('endStroke', updateClearButtonState);
+  
+  // Verificar estado inicial do botão
+  updateClearButtonState();
+}
+
+function updateClearButtonState() {
+  const clearButton = document.getElementById('clearSignature');
+  if (clearButton && signaturePad) {
+    clearButton.disabled = signaturePad.isEmpty();
+  }
 }
 
 function clearSignature() {
   if (signaturePad) {
     signaturePad.clear();
+    updateClearButtonState();
   }
 }
 

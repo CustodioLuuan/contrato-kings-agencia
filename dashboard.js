@@ -90,6 +90,7 @@ class ContractManager {
     document.getElementById('clientName').value = contract.clientName;
     document.getElementById('clientDoc').value = contract.clientDoc;
     document.getElementById('paymentDate').value = contract.paymentDate || '';
+    document.getElementById('contractValue').value = contract.contractValue || '';
   }
 
   handleSubmit(e) {
@@ -101,6 +102,7 @@ class ContractManager {
       clientName: formData.get('clientName'),
       clientDoc: formData.get('clientDoc'),
       paymentDate: formData.get('paymentDate'),
+      contractValue: formData.get('contractValue'),
       status: 'pending',
       createdAt: new Date().toISOString(),
       signedAt: null
@@ -188,6 +190,10 @@ class ContractManager {
       <div class="detail-row">
         <span class="detail-label">Data de Pagamento:</span>
         <span class="detail-value">${contract.paymentDate ? new Date(contract.paymentDate).toLocaleDateString('pt-BR') : 'Não informado'}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Valor:</span>
+        <span class="detail-value">${contract.contractValue || 'Não informado'}</span>
       </div>
       <div class="detail-row">
         <span class="detail-label">Status:</span>

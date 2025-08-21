@@ -21,6 +21,12 @@
     <section class="container">
       <h1 class="title">📄 Contrato de Prestação de Serviços – Kings Agência</h1>
 
+      <!-- Banner de Status -->
+      <div id="statusBanner" class="status-banner">
+        <h2>📄 Contrato para assinatura</h2>
+        <p>Os dados foram carregados automaticamente. Você pode prosseguir com a assinatura.</p>
+      </div>
+
       <div class="contract-wrapper">
         <div class="contract-box" id="contractBox">
           <div class="contract-content">
@@ -160,127 +166,7 @@
       }
     });
 
-    function showContractSignedMessage(contract) {
-      // Criar mensagem de contrato já assinado
-      const signedDiv = document.createElement('div');
-      signedDiv.style.cssText = `
-        background: #fef3c7;
-        color: #92400e;
-        padding: 16px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 1rem;
-        border: 1px solid #fbbf24;
-        text-align: center;
-      `;
-      signedDiv.innerHTML = `
-        <div style="font-size: 2rem; margin-bottom: 8px;">✅</div>
-        <strong>Contrato já foi assinado!</strong><br>
-        <span style="font-size: 0.9rem; opacity: 0.8;">
-          Este contrato foi assinado em ${new Date(contract.signedAt).toLocaleDateString('pt-BR')} às ${new Date(contract.signedAt).toLocaleTimeString('pt-BR')}
-        </span>
-      `;
-      
-      // Substituir o formulário pela mensagem
-      const form = document.getElementById('contractForm');
-      form.parentNode.insertBefore(signedDiv, form);
-      form.style.display = 'none';
-      
-      // Atualizar o contrato no texto com os dados do cliente
-      updateContractContent(contract);
-    }
 
-    function showContractPendingMessage(contract) {
-      // Criar mensagem de contrato pendente
-      const pendingDiv = document.createElement('div');
-      pendingDiv.style.cssText = `
-        background: #d1fae5;
-        color: #065f46;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        font-size: 0.9rem;
-        border: 1px solid #a7f3d0;
-      `;
-      pendingDiv.innerHTML = `
-        <strong>Contrato pré-preenchido</strong><br>
-        Os dados foram carregados automaticamente. Você pode prosseguir com a assinatura.
-      `;
-      
-      document.querySelector('.container').insertBefore(pendingDiv, document.querySelector('.contract-wrapper'));
-      
-      // Atualizar o contrato no texto com os dados do cliente
-      updateContractContent(contract);
-    }
-
-    function showContractNotFoundMessage() {
-      // Criar mensagem de contrato não encontrado
-      const notFoundDiv = document.createElement('div');
-      notFoundDiv.style.cssText = `
-        background: #fee2e2;
-        color: #991b1b;
-        padding: 16px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 1rem;
-        border: 1px solid #f87171;
-        text-align: center;
-      `;
-      notFoundDiv.innerHTML = `
-        <div style="font-size: 2rem; margin-bottom: 8px;">❌</div>
-        <strong>Contrato não encontrado!</strong><br>
-        <span style="font-size: 0.9rem; opacity: 0.8;">
-          O link do contrato é inválido ou expirou.
-        </span>
-      `;
-      
-      // Substituir o formulário pela mensagem
-      const form = document.getElementById('contractForm');
-      form.parentNode.insertBefore(notFoundDiv, form);
-      form.style.display = 'none';
-    }
-
-    function updateContractContent(contract) {
-      // Atualizar o contrato no texto com os dados do cliente
-      const contractContent = document.querySelector('.contract-content');
-      let contractText = contractContent.textContent;
-      
-      // Substituir placeholders pelos dados reais
-      contractText = contractText.replace('[Nome do Cliente]', contract.clientName);
-      contractText = contractText.replace('[●]', contract.clientDoc);
-      contractText = contractText.replace('R$ [●]', contract.contractValue);
-      contractText = contractText.replace('[ex.: 30% na assinatura e 70% na entrega]', contract.paymentTerms || '30% na assinatura e 70% na entrega');
-      contractText = contractText.replace('[●] de cada mês', '15 de cada mês');
-      contractText = contractText.replace('[Local], [Data].', `${contract.clientAddress.split(',')[0] || 'Itajaí'}, ${new Date().toLocaleDateString('pt-BR')}.`);
-      contractText = contractText.replace('[Cliente]', contract.clientName);
-      
-      contractContent.textContent = contractText;
-    }
-
-    function enableForm(contract) {
-      // Preencher formulário com dados do contrato
-      document.getElementById('nome').value = contract.clientName;
-      document.getElementById('email').value = contract.clientEmail;
-      document.getElementById('doc').value = contract.clientDoc;
-      document.getElementById('endereco').value = contract.clientAddress;
-      
-      // Marcar campos como readonly para evitar edição
-      document.getElementById('nome').readOnly = true;
-      document.getElementById('email').readOnly = true;
-      document.getElementById('doc').readOnly = true;
-      document.getElementById('endereco').readOnly = true;
-      
-      // Adicionar classe visual para indicar que está preenchido
-      document.getElementById('nome').classList.add('pre-filled');
-      document.getElementById('email').classList.add('pre-filled');
-      document.getElementById('doc').classList.add('pre-filled');
-      document.getElementById('endereco').classList.add('pre-filled');
-    }
-
-    function disableForm() {
-      // O formulário já está escondido pela função showContractSignedMessage
-      // Esta função pode ser expandida se necessário no futuro
-    }
   </script>
 </body>
 </html>

@@ -46,6 +46,9 @@ function showContractPendingMessage(contract) {
     <h2>📄 Contrato para assinatura</h2>
     <p>Contrato de ${contract.clientName} - CPF/CNPJ: ${contract.clientDoc}</p>
   `;
+  
+  // Atualizar conteúdo do contrato com dados do cliente
+  updateContractContent(contract);
 }
 
 function showContractNotFoundMessage() {

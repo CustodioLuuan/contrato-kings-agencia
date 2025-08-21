@@ -19,12 +19,12 @@
 <body>
   <main class="page">
     <section class="container">
-
-
       <div class="contract-wrapper">
         <div class="contract-box" id="contractBox">
           <div class="contract-content">
-
+            <div class="contract-header">
+              <h2>📄 CONTRATO DE PRESTAÇÃO DE SERVIÇOS – KINGS AGÊNCIA</h2>
+            </div>
             
             <div class="contract-section">
               <h3>PARTES:</h3>
@@ -198,14 +198,14 @@
         if (contract) {
           // Verificar se o contrato já foi assinado
           if (contract.status === 'signed') {
-            // Contrato já assinado - mostrar mensagem e desabilitar formulário
-            showContractSignedMessage(contract);
+            // Contrato já assinado - desabilitar formulário
             disableForm();
           } else {
             // Contrato pendente - permitir assinatura
-            showContractPendingMessage(contract);
             enableForm(contract);
           }
+          // Atualizar o contrato no texto com os dados do cliente
+          updateContractContent(contract);
         } else {
           // Contrato não encontrado
           showContractNotFoundMessage();
@@ -213,57 +213,9 @@
       }
     });
 
-    function showContractSignedMessage(contract) {
-      // Criar mensagem de contrato já assinado
-      const signedDiv = document.createElement('div');
-      signedDiv.style.cssText = `
-        background: #fef3c7;
-        color: #92400e;
-        padding: 16px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 1rem;
-        border: 1px solid #fbbf24;
-        text-align: center;
-      `;
-      signedDiv.innerHTML = `
-        <div style="font-size: 2rem; margin-bottom: 8px;">✅</div>
-        <strong>Contrato já foi assinado!</strong><br>
-        <span style="font-size: 0.9rem; opacity: 0.8;">
-          Este contrato foi assinado em ${new Date(contract.signedAt).toLocaleDateString('pt-BR')} às ${new Date(contract.signedAt).toLocaleTimeString('pt-BR')}
-        </span>
-      `;
-      
-      // Substituir o formulário pela mensagem
-      const form = document.getElementById('contractForm');
-      form.parentNode.insertBefore(signedDiv, form);
-      form.style.display = 'none';
-      
-      // Atualizar o contrato no texto com os dados do cliente
-      updateContractContent(contract);
-    }
 
-    function showContractPendingMessage(contract) {
-      // Criar mensagem de contrato pendente
-      const pendingDiv = document.createElement('div');
-      pendingDiv.style.cssText = `
-        background: #d1fae5;
-        color: #065f46;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        font-size: 0.9rem;
-        border: 1px solid #a7f3d0;
-      `;
-      pendingDiv.innerHTML = `
-        Os dados foram carregados automaticamente. Você pode prosseguir com a assinatura.
-      `;
-      
-      document.querySelector('.container').insertBefore(pendingDiv, document.querySelector('.contract-wrapper'));
-      
-      // Atualizar o contrato no texto com os dados do cliente
-      updateContractContent(contract);
-    }
+
+
 
     function showContractNotFoundMessage() {
       // Criar mensagem de contrato não encontrado
@@ -330,7 +282,6 @@
     }
 
     function disableForm() {
-      // O formulário já está escondido pela função showContractSignedMessage
       // Esta função pode ser expandida se necessário no futuro
     }
   </script>

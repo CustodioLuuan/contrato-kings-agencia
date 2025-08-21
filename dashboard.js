@@ -59,9 +59,11 @@ class ContractManager {
       title.textContent = 'Novo Contrato';
       form.reset();
       
-      // Definir data de pagamento como hoje
+      // Definir data de pagamento como hoje (data de criação do contrato)
       const today = new Date().toISOString().split('T')[0];
-      document.getElementById('paymentDate').value = today;
+      const paymentDateField = document.getElementById('paymentDate');
+      paymentDateField.value = today;
+      paymentDateField.readOnly = true; // Tornar readonly para sempre ser a data atual
     }
     
     modal.classList.add('active');
@@ -91,6 +93,9 @@ class ContractManager {
     document.getElementById('clientDoc').value = contract.clientDoc;
     document.getElementById('paymentDate').value = contract.paymentDate || '';
     document.getElementById('contractValue').value = contract.contractValue || '';
+    
+    // Permitir edição da data quando estiver editando
+    document.getElementById('paymentDate').readOnly = false;
   }
 
   handleSubmit(e) {

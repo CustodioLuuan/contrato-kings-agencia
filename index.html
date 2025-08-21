@@ -148,13 +148,8 @@
         <div class="signature-pad-container">
           <canvas id="signaturePad" width="400" height="200"></canvas>
           <div class="signature-actions">
-            <button type="button" id="clearSignature" class="btn btn-secondary">Limpar Assinatura</button>
+            <button type="button" id="clearSignature" class="btn btn-secondary">🗑️ Limpar Assinatura</button>
           </div>
-        </div>
-        
-        <div class="signature-info">
-          <p><strong>Nome:</strong> <span id="signatureName"></span></p>
-          <p><strong>Data:</strong> <span id="signatureDate"></span></p>
         </div>
       </div>
 
@@ -259,8 +254,14 @@
       // Usar a data de pagamento do contrato em vez da data atual
       let dataContrato = new Date().toLocaleDateString('pt-BR'); // valor padrão
       if (contract.paymentDate) {
-        const dataPagamento = new Date(contract.paymentDate);
-        dataContrato = dataPagamento.toLocaleDateString('pt-BR');
+        // Formatar a data diretamente da string (formato YYYY-MM-DD)
+        const partes = contract.paymentDate.split('-');
+        if (partes.length === 3) {
+          const ano = partes[0];
+          const mes = partes[1];
+          const dia = partes[2];
+          dataContrato = `${dia}/${mes}/${ano}`;
+        }
       }
       content = content.replace(/\[Data\]/g, dataContrato);
       

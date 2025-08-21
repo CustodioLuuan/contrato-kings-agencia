@@ -8,10 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (contract) {
       if (contract.status === 'signed') {
-        showContractSignedMessage(contract);
         disableForm();
       } else {
-        showContractPendingMessage(contract);
         enableForm(contract);
       }
     } else {
@@ -27,34 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('submitContract').addEventListener('click', submitContract);
 });
 
-function showContractSignedMessage(contract) {
-  const banner = document.getElementById('statusBanner');
-  banner.className = 'status-banner signed';
-  banner.innerHTML = `
-    <h2>✅ Contrato já assinado</h2>
-    <p>Este contrato foi assinado em ${new Date(contract.signedAt).toLocaleDateString('pt-BR')} às ${new Date(contract.signedAt).toLocaleTimeString('pt-BR')}.</p>
-  `;
-  
-  // Atualizar informações da assinatura
-  document.getElementById('signatureName').textContent = contract.clientName;
-  document.getElementById('signatureDate').textContent = new Date(contract.signedAt).toLocaleDateString('pt-BR');
-  
-  // Mostrar botão de download
-  document.getElementById('downloadPdfBtn').style.display = 'inline-block';
-}
 
-function showContractPendingMessage(contract) {
-  const banner = document.getElementById('statusBanner');
-  banner.className = 'status-banner pending';
-  banner.innerHTML = `
-    <h2>📄 Contrato para assinatura</h2>
-    <p>Contrato de ${contract.clientName} - CPF/CNPJ: ${contract.clientDoc}</p>
-  `;
-  
-  // Atualizar informações da assinatura
-  document.getElementById('signatureName').textContent = contract.clientName;
-  document.getElementById('signatureDate').textContent = new Date().toLocaleDateString('pt-BR');
-}
+
+
 
 function showContractNotFoundMessage() {
   const banner = document.getElementById('statusBanner');
@@ -157,7 +130,6 @@ function submitContract() {
     buildPdf();
     
     // Atualizar interface
-    showContractSignedMessage(contracts[contractIndex]);
     disableForm();
   }
 }

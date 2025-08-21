@@ -166,19 +166,6 @@ input.pre-filled:focus {
   text-align: center;
 }
 
-.signature-info {
-  background: #f3f4f6;
-  padding: 12px;
-  border-radius: 6px;
-  margin-top: 15px;
-}
-
-.signature-info p {
-  margin: 5px 0;
-  font-size: 13px;
-  color: #374151;
-}
-
 /* Botões de Ação */
 .contract-actions {
   display: flex;

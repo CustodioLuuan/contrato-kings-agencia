@@ -487,6 +487,7 @@ body.sigfs-lock { overflow: hidden; }
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .signature-line {
@@ -497,6 +498,11 @@ body.sigfs-lock { overflow: hidden; }
   max-width: 200px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Espaçamento para alinhar com a assinatura da Kings Agência */
+.signature-box:last-child {
+  padding-top: 60px; /* Ajuste conforme necessário para alinhar com a parte inferior da assinatura */
 }
 
 .signature-box p {

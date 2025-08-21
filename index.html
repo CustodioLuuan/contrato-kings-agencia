@@ -268,22 +268,15 @@
       
       // Substituir dia de pagamento
       let diaPagamento = '15'; // valor padrão
-      console.log('Contrato completo:', contract);
-      console.log('Data de pagamento do contrato:', contract.paymentDate);
       
       if (contract.paymentDate) {
-        const dataPagamento = new Date(contract.paymentDate);
-        diaPagamento = dataPagamento.getDate().toString();
-        console.log('Data de pagamento original:', contract.paymentDate);
-        console.log('Data de pagamento convertida:', dataPagamento);
-        console.log('Dia extraído:', diaPagamento);
-        console.log('Dia como string:', diaPagamento);
-      } else {
-        console.log('Nenhuma data de pagamento encontrada, usando padrão:', diaPagamento);
+        // Extrair o dia diretamente da string da data (formato YYYY-MM-DD)
+        const partes = contract.paymentDate.split('-');
+        if (partes.length === 3) {
+          diaPagamento = partes[2]; // O dia está na terceira posição
+        }
       }
       
-      console.log('Dia final que será usado:', diaPagamento);
-      alert('Dia que será usado: ' + diaPagamento + '\nData de pagamento: ' + contract.paymentDate);
       content = content.replace(/\[DIA_PAGAMENTO\]/g, diaPagamento);
       
       // Substituir valor do contrato

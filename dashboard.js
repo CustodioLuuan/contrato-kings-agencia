@@ -120,7 +120,7 @@ class ContractManager {
       signedAt: null
     };
     
-    console.log('Dados do contrato sendo salvos:', contractData);
+
 
     if (this.currentContractId) {
       // Atualizar contrato existente

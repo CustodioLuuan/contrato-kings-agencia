@@ -122,42 +122,109 @@ input.pre-filled:focus {
   box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
 }
 
+/* Seção de Assinatura */
 .signature-section {
-  margin-top: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin: 20px 0;
 }
 
-.signature-pad {
-  border: 1px dashed #cbd5e1;
-  border-radius: 12px;
-  background: #fff;
-  width: 100%;
-  height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+.signature-section h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  color: #1f2937;
 }
 
-.signature-pad canvas {
+.signature-section p {
+  margin: 0 0 15px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.signature-pad-container {
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 15px;
+  background: #f9fafb;
+  margin-bottom: 15px;
+}
+
+#signaturePad {
   width: 100%;
-  height: 100%;
-  /* Melhor experiência de toque em Android/iOS */
-  touch-action: none;
-  -ms-touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  height: 150px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  cursor: crosshair;
 }
 
 .signature-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
+  margin-top: 10px;
+  text-align: center;
 }
 
-/* Fallback: esconde o botão de tela cheia em telas largas, mas JS faz a detecção definitiva */
-@media (hover: hover) and (pointer: fine) {
-  #openSignatureFullscreen { display: none; }
+.signature-info {
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 15px;
+}
+
+.signature-info p {
+  margin: 5px 0;
+  font-size: 13px;
+  color: #374151;
+}
+
+/* Botões de Ação */
+.contract-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #059669;
 }
 
 .check {

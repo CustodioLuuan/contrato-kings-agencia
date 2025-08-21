@@ -1,485 +1,238 @@
-(function() {
-  // Sempre voltar ao topo ao carregar/atualizar a página
-  if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual';
-  }
-  function forceScrollTop() {
-    try { window.scrollTo(0, 0); } catch (_) {}
-  }
-  window.addEventListener('load', forceScrollTop);
-  window.addEventListener('pageshow', function(e) { if (e.persisted) forceScrollTop(); });
-  const form = document.getElementById('contractForm');
-  const nomeInput = document.getElementById('nome');
-  const docInput = document.getElementById('doc');
-  const docLabel = document.getElementById('docLabel');
-  const docTypeRadios = Array.from(document.querySelectorAll('input[name="docType"]'));
-  const emailInput = document.getElementById('email');
-  const enderecoInput = document.getElementById('endereco');
-  const aceiteInput = document.getElementById('aceite');
-  const contractBox = document.getElementById('contractBox');
-  const contractContentEl = document.querySelector('.contract-content');
-  const contractTemplate = contractContentEl ? contractContentEl.innerText : '';
-
-  function getSelectedDocType() {
-    const selected = docTypeRadios.find(r => r.checked);
-    return selected ? selected.value : 'CPF';
-  }
-
-  // Signature Pad setup
-  const canvas = document.getElementById('signatureCanvas');
-  const clearBtn = document.getElementById('clearSignature');
-  const fsOpenBtn = document.getElementById('openSignatureFullscreen');
-  const fsModal = document.getElementById('signatureFullscreen');
-  const fsCanvas = document.getElementById('signatureCanvasFS');
-  const fsClearBtn = document.getElementById('fsClear');
-  const fsCloseBtn = document.getElementById('fsClose');
-  let signaturePad;
-  let signaturePadFS;
-  let hasSignatureImage = false;
-  let signatureImageDataURL = null;
-
-  function isTouchDevice() {
-    return (
-      'ontouchstart' in window ||
-      (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
-      (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
-    );
-  }
-
-  function resizeCanvasToDisplaySize(canvasEl) {
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    const { clientWidth, clientHeight } = canvasEl;
-    canvasEl.width = clientWidth * ratio;
-    canvasEl.height = clientHeight * ratio;
-    const ctx = canvasEl.getContext('2d');
-    ctx.scale(ratio, ratio);
-  }
-
-  function initSignaturePad() {
-    resizeCanvasToDisplaySize(canvas);
-    signaturePad = new SignaturePad(canvas, {
-      backgroundColor: '#ffffff',
-      penColor: '#111827',
-      minWidth: 0.8,
-      maxWidth: 2.2
-    });
-    // Evita scroll enquanto assina em mobile
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); }, { passive: false });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
-  }
-
-  function sizeFsCanvas() {
-    const wrap = document.getElementById('sigfsWrap');
-    if (!wrap) return;
-    const rect = wrap.getBoundingClientRect();
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    const width = Math.max(1, Math.floor(rect.width));
-    const height = Math.max(1, Math.floor(rect.height));
-    // Ajuste fino: compensa possíveis arredondamentos de viewport em iOS/Android
-    const scaledWidth = Math.round(width * ratio);
-    const scaledHeight = Math.round(height * ratio);
-    fsCanvas.width = scaledWidth;
-    fsCanvas.height = scaledHeight;
-    const ctx = fsCanvas.getContext('2d');
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(ratio, ratio);
-    fsCanvas.style.width = width + 'px';
-    fsCanvas.style.height = height + 'px';
-  }
-
-  function initSignaturePadFS() {
-    sizeFsCanvas();
-    signaturePadFS = new SignaturePad(fsCanvas, {
-      backgroundColor: '#ffffff',
-      penColor: '#111827',
-      minWidth: 0.9,
-      maxWidth: 2.4
-    });
-    fsCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); }, { passive: false });
-    fsCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
-  }
-
-  window.addEventListener('resize', () => {
-    const data = signaturePad && !signaturePad.isEmpty() ? signaturePad.toData() : null;
-    resizeCanvasToDisplaySize(canvas);
-    if (signaturePad) {
-      signaturePad.clear();
-      if (data) {
-        signaturePad.fromData(data);
-      } else if (hasSignatureImage && signatureImageDataURL) {
-        drawImageOnCanvasContain(signatureImageDataURL);
-      }
-    }
-  });
-
-  initSignaturePad();
-  // Removido indicador sutil de rolagem
-
-  // Oculta o botão de tela cheia em dispositivos não-touch (desktop)
-  if (fsOpenBtn && !isTouchDevice()) {
-    fsOpenBtn.style.display = 'none';
-  }
-
-  function renderContractPreview() {
-    if (!contractContentEl) return;
-    const name = (nomeInput.value || '').trim() || '[Nome do Cliente]';
-    const docType = getSelectedDocType();
-    const docMasked = (docInput.value || '').trim() || '[●]';
-    let rendered = contractTemplate;
-    // Substitui nome nas duas variações de placeholder
-    rendered = rendered.replace(/\[Nome do Cliente\]/g, name);
-    rendered = rendered.replace(/\[Cliente\]/g, name);
-    // Substitui CPF/CNPJ no placeholder específico
-    if (docType === 'CNPJ') {
-      rendered = rendered.replace(/CPF nº \[●\]/g, `CNPJ nº ${docMasked}`);
-    } else {
-      rendered = rendered.replace(/CPF nº \[●\]/g, `CPF nº ${docMasked}`);
-    }
-    contractContentEl.innerText = rendered;
-  }
-
-  clearBtn.addEventListener('click', function() {
-    if (signaturePad) signaturePad.clear();
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
-    ctx.restore();
-    hasSignatureImage = false;
-    signatureImageDataURL = null;
-  });
-
-  function openFullscreenSignature() {
-    if (!fsModal) return;
-    fsModal.classList.remove('hidden');
-    document.body.classList.add('sigfs-lock');
-    try {
-      if (screen.orientation && screen.orientation.lock) {
-        const isPortrait = window.matchMedia('(orientation: portrait)').matches;
-        if (isPortrait) screen.orientation.lock('landscape').catch(() => {});
-      }
-    } catch (e) {}
-    if (!signaturePadFS) initSignaturePadFS(); else { sizeFsCanvas(); signaturePadFS.clear(); }
-    if (signaturePad && !signaturePad.isEmpty()) signaturePadFS.fromData(signaturePad.toData());
-    window.addEventListener('resize', sizeFsCanvas);
-    window.addEventListener('orientationchange', sizeFsCanvas);
-  }
-
-  function closeFullscreenSignature(saveBack = true) {
-    if (!fsModal) return;
-    if (saveBack && signaturePadFS && !signaturePadFS.isEmpty()) {
-      // Corrige orientação: se a tela estava em retrato, roda a imagem do FS
-      const isPortrait = window.matchMedia('(orientation: portrait)').matches;
-      if (isPortrait) {
-        // Renderiza em um canvas auxiliar rotacionado 90°
-        const aux = document.createElement('canvas');
-        aux.width = fsCanvas.height;
-        aux.height = fsCanvas.width;
-        const actx = aux.getContext('2d');
-        actx.save();
-        actx.translate(aux.width / 2, aux.height / 2);
-        actx.rotate(-Math.PI / 2);
-        actx.drawImage(fsCanvas, -fsCanvas.width / 2, -fsCanvas.height / 2);
-        actx.restore();
-        signatureImageDataURL = aux.toDataURL('image/png');
+document.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const contractId = urlParams.get('contract');
+  
+  if (contractId) {
+    const contracts = JSON.parse(localStorage.getItem('contracts') || '[]');
+    const contract = contracts.find(c => c.id === contractId);
+    
+    if (contract) {
+      if (contract.status === 'signed') {
+        showContractSignedMessage(contract);
+        disableForm();
       } else {
-        signatureImageDataURL = fsCanvas.toDataURL('image/png');
+        showContractPendingMessage(contract);
+        enableForm(contract);
       }
-      hasSignatureImage = true;
-      signaturePad.clear();
-      drawImageOnCanvasContain(signatureImageDataURL);
-    }
-    fsModal.classList.add('hidden');
-    document.body.classList.remove('sigfs-lock');
-    window.removeEventListener('resize', sizeFsCanvas);
-    window.removeEventListener('orientationchange', sizeFsCanvas);
-  }
-
-  if (fsOpenBtn) fsOpenBtn.addEventListener('click', openFullscreenSignature);
-  if (fsClearBtn) fsClearBtn.addEventListener('click', () => signaturePadFS && signaturePadFS.clear());
-  if (fsCloseBtn) fsCloseBtn.addEventListener('click', () => closeFullscreenSignature(true));
-
-  // Fecha ao apertar back no Android/iOS
-  window.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && !fsModal.classList.contains('hidden')) closeFullscreenSignature(false);
-  });
-  window.addEventListener('popstate', function() {
-    if (!fsModal.classList.contains('hidden')) closeFullscreenSignature(false);
-  });
-
-  function setError(fieldName, message) {
-    const el = document.querySelector(`.error[data-for="${fieldName}"]`);
-    if (el) el.textContent = message || '';
-  }
-
-  function validateCPF(cpf) {
-    // Remove non-digits
-    cpf = (cpf || '').replace(/\D/g, '');
-    if (!cpf || cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-
-    function calcDigit(digs) {
-      let sum = 0;
-      for (let i = 0; i < digs.length; i++) {
-        sum += parseInt(digs.charAt(i), 10) * ((digs.length + 1) - i);
-      }
-      const mod = (sum * 10) % 11;
-      return mod === 10 ? 0 : mod;
-    }
-
-    const d1 = calcDigit(cpf.substring(0, 9));
-    const d2 = calcDigit(cpf.substring(0, 10));
-    return d1 === parseInt(cpf.charAt(9), 10) && d2 === parseInt(cpf.charAt(10), 10);
-  }
-
-  function validateCNPJ(cnpj) {
-    cnpj = (cnpj || '').replace(/\D/g, '');
-    if (!cnpj || cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
-
-    function calc(base) {
-      let length = base.length - 2;
-      let numbers = base.substring(0, length);
-      let digits = base.substring(length);
-      let sum = 0;
-      let pos = length - 7;
-      for (let i = length; i >= 1; i--) {
-        sum += parseInt(numbers.charAt(length - i), 10) * pos--;
-        if (pos < 2) pos = 9;
-      }
-      let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-      if (result !== parseInt(digits.charAt(0), 10)) return false;
-      length = length + 1;
-      numbers = base.substring(0, length);
-      sum = 0;
-      pos = length - 7;
-      for (let i = length; i >= 1; i--) {
-        sum += parseInt(numbers.charAt(length - i), 10) * pos--;
-        if (pos < 2) pos = 9;
-      }
-      result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-      return result === parseInt(digits.charAt(1), 10);
-    }
-
-    return calc(cnpj);
-  }
-
-  function validate() {
-    let ok = true;
-    // Nome
-    if (!nomeInput.value.trim()) { setError('nome', 'Informe o nome completo'); ok = false; } else setError('nome');
-    // Documento
-    const docType = getSelectedDocType();
-    const docVal = docInput.value.trim();
-    if (!docVal) { setError('doc', `Informe o ${docType}`); ok = false; }
-    else if (docType === 'CPF' && !validateCPF(docVal)) { setError('doc', 'CPF inválido'); ok = false; }
-    else if (docType === 'CNPJ' && !validateCNPJ(docVal)) { setError('doc', 'CNPJ inválido'); ok = false; }
-    else setError('doc');
-    // Email
-    if (!emailInput.value.trim()) { setError('email', 'Informe o e-mail'); ok = false; } else setError('email');
-    // Endereço
-    if (!enderecoInput.value.trim()) { setError('endereco', 'Informe o endereço'); ok = false; } else setError('endereco');
-    // Assinatura
-    if (!signaturePad || (signaturePad.isEmpty() && !hasSignatureImage)) { setError('signature', 'Assine no campo acima'); ok = false; } else setError('signature');
-    // Aceite
-    if (!aceiteInput.checked) { setError('aceite', 'É necessário aceitar os termos'); ok = false; } else setError('aceite');
-
-    return ok;
-  }
-
-  function currentDateBR() {
-    const d = new Date();
-    return d.toLocaleDateString('pt-BR');
-  }
-
-  function addWrappedText(doc, text, x, y, maxWidth, lineHeight) {
-    const split = doc.splitTextToSize(text, maxWidth);
-    split.forEach(function(line, idx) {
-      doc.text(line, x, y + (idx * lineHeight));
-    });
-    return y + split.length * lineHeight;
-  }
-
-  function drawImageOnCanvasContain(dataURL) {
-    const img = new Image();
-    img.onload = function() {
-      const ctx = canvas.getContext('2d');
-      // Garante densidade correta
-      resizeCanvasToDisplaySize(canvas);
-      ctx.save();
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
-      const targetW = canvas.clientWidth;
-      const targetH = canvas.clientHeight;
-      const scale = Math.min(targetW / img.width, targetH / img.height);
-      const drawW = img.width * scale;
-      const drawH = img.height * scale;
-      const dx = (targetW - drawW) / 2;
-      const dy = (targetH - drawH) / 2;
-      ctx.drawImage(img, dx, dy, drawW, drawH);
-      ctx.restore();
-    };
-    img.src = dataURL;
-  }
-
-  function buildPdf() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-
-    const margin = 48;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const usable = pageWidth - margin * 2;
-    let cursorY = margin;
-
-    // Título
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text('Contrato de Prestação de Serviços – Kings Agência', pageWidth / 2, cursorY, { align: 'center' });
-    cursorY += 20;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-
-    // Dados do contratante
-    const dados = [
-      `Nome: ${nomeInput.value.trim()}`,
-      `${getSelectedDocType()}: ${docInput.value.trim()}`,
-      `E-mail: ${emailInput.value.trim()}`,
-      `Endereço: ${enderecoInput.value.trim()}`,
-      `Data: ${currentDateBR()}`
-    ].join('\n');
-    cursorY = addWrappedText(doc, dados, margin, cursorY, usable, 16) + 8;
-
-    // Conteúdo do contrato (o mesmo que exibido na caixa)
-    const contrato = contractBox.innerText.trim();
-    doc.setFont('helvetica', 'bold');
-    doc.text('Contrato:', margin, cursorY);
-    cursorY += 16;
-    doc.setFont('helvetica', 'normal');
-
-    const lines = doc.splitTextToSize(contrato, usable);
-    const lineHeight = 14;
-    lines.forEach(function(line) {
-      if (cursorY > doc.internal.pageSize.getHeight() - margin - 160) {
-        doc.addPage();
-        cursorY = margin;
-      }
-      doc.text(line, margin, cursorY);
-      cursorY += lineHeight;
-    });
-
-    // Espaço para assinatura
-    if (cursorY < doc.internal.pageSize.getHeight() - margin - 160) {
-      cursorY = doc.internal.pageSize.getHeight() - margin - 160;
     } else {
+      showContractNotFoundMessage();
+    }
+  }
+  
+  // Inicializar assinatura digital
+  initSignaturePad();
+  
+  // Event listeners
+  document.getElementById('clearSignature').addEventListener('click', clearSignature);
+  document.getElementById('submitContract').addEventListener('click', submitContract);
+});
+
+function showContractSignedMessage(contract) {
+  const banner = document.getElementById('statusBanner');
+  banner.className = 'status-banner signed';
+  banner.innerHTML = `
+    <h2>✅ Contrato já assinado</h2>
+    <p>Este contrato foi assinado em ${new Date(contract.signedAt).toLocaleDateString('pt-BR')} às ${new Date(contract.signedAt).toLocaleTimeString('pt-BR')}.</p>
+  `;
+  
+  // Atualizar informações da assinatura
+  document.getElementById('signatureName').textContent = contract.clientName;
+  document.getElementById('signatureDate').textContent = new Date(contract.signedAt).toLocaleDateString('pt-BR');
+  
+  // Mostrar botão de download
+  document.getElementById('downloadPdfBtn').style.display = 'inline-block';
+}
+
+function showContractPendingMessage(contract) {
+  const banner = document.getElementById('statusBanner');
+  banner.className = 'status-banner pending';
+  banner.innerHTML = `
+    <h2>📄 Contrato para assinatura</h2>
+    <p>Contrato de ${contract.clientName} - CPF/CNPJ: ${contract.clientDoc}</p>
+  `;
+  
+  // Atualizar informações da assinatura
+  document.getElementById('signatureName').textContent = contract.clientName;
+  document.getElementById('signatureDate').textContent = new Date().toLocaleDateString('pt-BR');
+}
+
+function showContractNotFoundMessage() {
+  const banner = document.getElementById('statusBanner');
+  banner.className = 'status-banner error';
+  banner.innerHTML = `
+    <h2>❌ Contrato não encontrado</h2>
+    <p>O contrato solicitado não foi encontrado ou o link está inválido.</p>
+  `;
+}
+
+function disableForm() {
+  document.getElementById('signaturePad').style.pointerEvents = 'none';
+  document.getElementById('clearSignature').disabled = true;
+  document.getElementById('submitContract').style.display = 'none';
+}
+
+function enableForm(contract) {
+  document.getElementById('signaturePad').style.pointerEvents = 'auto';
+  document.getElementById('clearSignature').disabled = false;
+  document.getElementById('submitContract').style.display = 'inline-block';
+  
+  // Atualizar conteúdo do contrato com dados do cliente
+  updateContractContent(contract);
+}
+
+function updateContractContent(contract) {
+  // Substituir placeholders no contrato
+  const contractContent = document.querySelector('.contract-content');
+  let content = contractContent.innerHTML;
+  
+  content = content.replace(/\[Nome do Cliente\]/g, contract.clientName);
+  content = content.replace(/\[●\]/g, contract.clientDoc);
+  content = content.replace(/\[Local\]/g, 'Itajaí/SC');
+  content = content.replace(/\[Data\]/g, new Date().toLocaleDateString('pt-BR'));
+  content = content.replace(/\[Cliente\]/g, contract.clientName);
+  
+  contractContent.innerHTML = content;
+}
+
+// Variáveis globais para assinatura
+let signaturePad;
+
+function initSignaturePad() {
+  const canvas = document.getElementById('signaturePad');
+  if (!canvas) return;
+  
+  // Ajustar tamanho do canvas
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  
+  // Inicializar SignaturePad
+  signaturePad = new SignaturePad(canvas, {
+    backgroundColor: '#ffffff',
+    penColor: '#111827',
+    minWidth: 0.8,
+    maxWidth: 2.2
+  });
+  
+  // Prevenir scroll em dispositivos touch
+  canvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+  canvas.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+}
+
+function clearSignature() {
+  if (signaturePad) {
+    signaturePad.clear();
+  }
+}
+
+function submitContract() {
+  // Verificar se há assinatura
+  if (!signaturePad || signaturePad.isEmpty()) {
+    alert('Por favor, assine o contrato antes de continuar.');
+    return;
+  }
+  
+  // Obter ID do contrato da URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const contractId = urlParams.get('contract');
+  
+  if (!contractId) {
+    alert('Erro: ID do contrato não encontrado.');
+    return;
+  }
+  
+  // Atualizar status do contrato
+  const contracts = JSON.parse(localStorage.getItem('contracts') || '[]');
+  const contractIndex = contracts.findIndex(c => c.id === contractId);
+  
+  if (contractIndex !== -1) {
+    contracts[contractIndex].status = 'signed';
+    contracts[contractIndex].signedAt = new Date().toISOString();
+    localStorage.setItem('contracts', JSON.stringify(contracts));
+    
+    // Mostrar mensagem de sucesso
+    alert('Contrato assinado com sucesso! O PDF será baixado automaticamente.');
+    
+    // Gerar e baixar PDF
+    buildPdf();
+    
+    // Atualizar interface
+    showContractSignedMessage(contracts[contractIndex]);
+    disableForm();
+  }
+}
+
+function buildPdf() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  
+  const margin = 48;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const usable = pageWidth - margin * 2;
+  let cursorY = margin;
+  
+  // Título
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.text('Contrato de Prestação de Serviços – Kings Agência', pageWidth / 2, cursorY, { align: 'center' });
+  cursorY += 20;
+  
+  // Conteúdo do contrato
+  const contractContent = document.querySelector('.contract-content');
+  const contractText = contractContent.innerText;
+  
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  
+  const lines = doc.splitTextToSize(contractText, usable);
+  const lineHeight = 12;
+  
+  lines.forEach(function(line) {
+    if (cursorY > doc.internal.pageSize.getHeight() - margin - 160) {
       doc.addPage();
       cursorY = margin;
     }
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('Assinatura do Contratante:', margin, cursorY);
-    cursorY += 8;
-
-    // Imagem da assinatura
-    const signatureDataURL = hasSignatureImage && signatureImageDataURL
-      ? signatureImageDataURL
-      : signaturePad.toDataURL('image/png');
-    const sigWidth = 280;
-    const sigHeight = 100;
-    doc.addImage(signatureDataURL, 'PNG', margin, cursorY, sigWidth, sigHeight);
-
-    // Rodapé com identificações
-    const bottomY = doc.internal.pageSize.getHeight() - margin;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text('Kings Agência – CONTRATADO', margin, bottomY);
-    doc.text(`${nomeInput.value.trim()} – CONTRATANTE`, pageWidth - margin, bottomY, { align: 'right' });
-
-    const filename = `Contrato_Kings_Agencia_${nomeInput.value.trim().replace(/\s+/g, '_')}.pdf`;
-    doc.save(filename);
-  }
-
-  function maskCPF(value) {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-      .slice(0, 14);
-  }
-
-  function maskCNPJ(value) {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{2})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1/$2')
-      .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
-      .slice(0, 18);
-  }
-
-  function applyDocMask() {
-    const type = getSelectedDocType();
-    const cursor = docInput.selectionStart;
-    const before = docInput.value;
-    docInput.value = type === 'CPF' ? maskCPF(docInput.value) : maskCNPJ(docInput.value);
-    const diff = docInput.value.length - before.length;
-    docInput.setSelectionRange(cursor + diff, cursor + diff);
-  }
-
-  docInput.addEventListener('input', function() {
-    applyDocMask();
-    renderContractPreview();
+    doc.text(line, margin, cursorY);
+    cursorY += lineHeight;
   });
-
-  docTypeRadios.forEach(r => r.addEventListener('change', function() {
-    const type = getSelectedDocType();
-    docLabel.textContent = type;
-    docInput.placeholder = type === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00';
-    setError('doc');
-    applyDocMask();
-    renderContractPreview();
-  }));
-
-  nomeInput.addEventListener('input', renderContractPreview);
-
-  // Primeira renderização mantendo placeholders quando vazio
-  renderContractPreview();
-
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (!validate()) {
-      // Foca no primeiro erro
-      const firstError = document.querySelector('.error:not(:empty)');
-      if (firstError) {
-        const target = firstError.getAttribute('data-for');
-        const input = document.getElementById(target);
-        if (input) input.focus();
-      }
-      return;
-    }
-    
-    // Marcar contrato como assinado se vier de um link personalizado
-    const urlParams = new URLSearchParams(window.location.search);
-    const contractId = urlParams.get('contract');
-    
-    if (contractId) {
-      // Atualizar status do contrato no localStorage
-      const contracts = JSON.parse(localStorage.getItem('contracts') || '[]');
-      const contractIndex = contracts.findIndex(c => c.id === contractId);
-      
-      if (contractIndex !== -1) {
-        contracts[contractIndex].status = 'signed';
-        contracts[contractIndex].signedAt = new Date().toISOString();
-        localStorage.setItem('contracts', JSON.stringify(contracts));
-        
-        // Mostrar mensagem de sucesso
-        setTimeout(() => {
-          alert('Contrato assinado com sucesso! O PDF será baixado automaticamente.');
-        }, 100);
-      }
-    }
-    
-    buildPdf();
-  });
-})();
+  
+  // Espaço para assinatura
+  if (cursorY < doc.internal.pageSize.getHeight() - margin - 160) {
+    cursorY = doc.internal.pageSize.getHeight() - margin - 160;
+  } else {
+    doc.addPage();
+    cursorY = margin;
+  }
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Assinatura do Contratante:', margin, cursorY);
+  cursorY += 8;
+  
+  // Imagem da assinatura
+  const signatureDataURL = signaturePad.toDataURL('image/png');
+  const sigWidth = 280;
+  const sigHeight = 100;
+  doc.addImage(signatureDataURL, 'PNG', margin, cursorY, sigWidth, sigHeight);
+  
+  // Nome e data da assinatura
+  cursorY += sigHeight + 10;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`Nome: ${document.getElementById('signatureName').textContent}`, margin, cursorY);
+  cursorY += 12;
+  doc.text(`Data: ${document.getElementById('signatureDate').textContent}`, margin, cursorY);
+  
+  // Nome do arquivo
+  const urlParams = new URLSearchParams(window.location.search);
+  const contractId = urlParams.get('contract');
+  const contracts = JSON.parse(localStorage.getItem('contracts') || '[]');
+  const contract = contracts.find(c => c.id === contractId);
+  
+  const filename = contract 
+    ? `Contrato_${contract.clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
+    : `Contrato_Kings_Agencia_${new Date().toISOString().split('T')[0]}.pdf`;
+  
+  doc.save(filename);
+}
 
 

@@ -142,59 +142,29 @@
         </div>
       </div>
 
-      <form class="form" id="contractForm" novalidate>
-        <div class="form-grid">
-          <div class="form-field">
-            <label for="nome">Nome completo</label>
-            <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required />
-            <small class="error" data-for="nome"></small>
-          </div>
-          <div class="form-field">
-            <label>Documento</label>
-            <div class="doc-type">
-              <label class="radio"><input type="radio" name="docType" value="CPF" checked /> CPF</label>
-              <label class="radio"><input type="radio" name="docType" value="CNPJ" /> CNPJ</label>
-            </div>
-          </div>
-          <div class="form-field">
-            <label for="doc" id="docLabel">CPF</label>
-            <input type="text" id="doc" name="doc" placeholder="000.000.000-00" required />
-            <small class="error" data-for="doc"></small>
-          </div>
-          <div class="form-field">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" placeholder="seuemail@exemplo.com" required />
-            <small class="error" data-for="email"></small>
-          </div>
-          <div class="form-field full">
-            <label for="endereco">Endereço</label>
-            <input type="text" id="endereco" name="endereco" placeholder="Rua, número, bairro, cidade - UF" required />
-            <small class="error" data-for="endereco"></small>
-          </div>
-        </div>
-
-        <div class="signature-section">
-          <label>Assinatura digital</label>
-          <div class="signature-pad">
-            <canvas id="signatureCanvas"></canvas>
-          </div>
+      <!-- Seção de Assinatura -->
+      <div class="signature-section">
+        <h3>📝 Assinatura Digital</h3>
+        <p>Assine digitalmente o contrato abaixo:</p>
+        
+        <div class="signature-pad-container">
+          <canvas id="signaturePad" width="400" height="200"></canvas>
           <div class="signature-actions">
-            <button type="button" class="btn btn-ghost" id="clearSignature">Limpar assinatura</button>
-            <button type="button" class="btn" id="openSignatureFullscreen">Tela cheia</button>
+            <button type="button" id="clearSignature" class="btn btn-secondary">Limpar Assinatura</button>
           </div>
-          <small class="error" data-for="signature"></small>
         </div>
+        
+        <div class="signature-info">
+          <p><strong>Nome:</strong> <span id="signatureName"></span></p>
+          <p><strong>Data:</strong> <span id="signatureDate"></span></p>
+        </div>
+      </div>
 
-        <div class="check">
-          <input type="checkbox" id="aceite" required />
-          <label for="aceite">Li e aceito os termos do contrato</label>
-        </div>
-        <small class="error" data-for="aceite"></small>
-
-        <div class="actions">
-          <button type="submit" class="btn" id="submitBtn">Enviar e Baixar PDF</button>
-        </div>
-      </form>
+      <!-- Botões de Ação -->
+      <div class="contract-actions">
+        <button type="button" id="downloadPdfBtn" class="btn btn-success" style="display: none;">Baixar PDF</button>
+        <button type="button" id="submitContract" class="btn btn-primary">Enviar e Baixar PDF</button>
+      </div>
     </section>
   </main>
 

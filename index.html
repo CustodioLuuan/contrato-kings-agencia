@@ -271,6 +271,9 @@
       if (contract.paymentDate) {
         const dataPagamento = new Date(contract.paymentDate);
         diaPagamento = dataPagamento.getDate().toString();
+        console.log('Data de pagamento original:', contract.paymentDate);
+        console.log('Data de pagamento convertida:', dataPagamento);
+        console.log('Dia extraído:', diaPagamento);
       }
       content = content.replace(/\[DIA_PAGAMENTO\]/g, diaPagamento);
       

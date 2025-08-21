@@ -247,18 +247,16 @@
     function updateContractContent(contract) {
       // Atualizar o contrato no texto com os dados do cliente
       const contractContent = document.querySelector('.contract-content');
-      let contractText = contractContent.textContent;
+      let content = contractContent.innerHTML;
       
       // Substituir placeholders pelos dados reais
-      contractText = contractText.replace('[Nome do Cliente]', contract.clientName);
-      contractText = contractText.replace('[●]', contract.clientDoc);
-      contractText = contractText.replace('R$ [●]', contract.contractValue);
-      contractText = contractText.replace('[ex.: 30% na assinatura e 70% na entrega]', contract.paymentTerms || '30% na assinatura e 70% na entrega');
-      contractText = contractText.replace('[●] de cada mês', '15 de cada mês');
-      contractText = contractText.replace('[Local], [Data].', `${contract.clientAddress.split(',')[0] || 'Itajaí'}, ${new Date().toLocaleDateString('pt-BR')}.`);
-      contractText = contractText.replace('[Cliente]', contract.clientName);
+      content = content.replace(/\[Nome do Cliente\]/g, contract.clientName);
+      content = content.replace(/\[●\]/g, contract.clientDoc);
+      content = content.replace(/\[Local\]/g, 'Itajaí/SC');
+      content = content.replace(/\[Data\]/g, new Date().toLocaleDateString('pt-BR'));
+      content = content.replace(/\[Cliente\]/g, contract.clientName);
       
-      contractContent.textContent = contractText;
+      contractContent.innerHTML = content;
     }
 
     function enableForm(contract) {

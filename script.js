@@ -53,19 +53,7 @@ function enableForm(contract) {
   updateContractContent(contract);
 }
 
-function updateContractContent(contract) {
-  // Substituir placeholders no contrato
-  const contractContent = document.querySelector('.contract-content');
-  let content = contractContent.innerHTML;
-  
-  content = content.replace(/\[Nome do Cliente\]/g, contract.clientName);
-  content = content.replace(/\[●\]/g, contract.clientDoc);
-  content = content.replace(/\[Local\]/g, 'Itajaí/SC');
-  content = content.replace(/\[Data\]/g, new Date().toLocaleDateString('pt-BR'));
-  content = content.replace(/\[Cliente\]/g, contract.clientName);
-  
-  contractContent.innerHTML = content;
-}
+
 
 // Variáveis globais para assinatura
 let signaturePad;

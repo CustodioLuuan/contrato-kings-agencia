@@ -60,9 +60,17 @@ class ContractManager {
       form.reset();
       
       // Definir data de pagamento como hoje (data de criação do contrato)
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayString = `${year}-${month}-${day}`;
+      
+      console.log('Data atual:', todayString);
+      console.log('Data completa:', today);
+      
       const paymentDateField = document.getElementById('paymentDate');
-      paymentDateField.value = today;
+      paymentDateField.value = todayString;
       paymentDateField.readOnly = true; // Tornar readonly para sempre ser a data atual
     }
     
